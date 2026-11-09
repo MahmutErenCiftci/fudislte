@@ -88,7 +88,10 @@ export function resolveAppFile(rootDir: string, pathname: string): string | null
   } catch {
     return null
   }
-  rel = rel.replace(/^[/\\]+/, '') || 'connect.html'
+  // A backslash is a separator on Windows but an ordinary character elsewhere; the
+  // renderer's files never contain one (or NUL), so refuse both on every platform.
+  if (/[\\\0]/.test(rel)) return null
+  rel = rel.replace(/^\/+/, '') || 'connect.html'
   const root = path.resolve(rootDir)
   const file = path.resolve(root, rel)
   return file.startsWith(root + path.sep) ? file : null

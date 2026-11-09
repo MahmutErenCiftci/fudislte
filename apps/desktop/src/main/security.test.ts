@@ -78,7 +78,7 @@ describe('resolveAppFile', () => {
   })
 
   it('blocks path traversal', () => {
-    for (const p of ['/../main.cjs', '/%2e%2e/main.cjs', '/..%5cmain.cjs', '/%E0%A4%A']) {
+    for (const p of ['/../main.cjs', '/%2e%2e/main.cjs', '/..%5cmain.cjs', '/a%5c..%5c..%5cmain.cjs', '/x%00.js', '/%E0%A4%A']) {
       expect(resolveAppFile(root, p), p).toBeNull()
     }
   })
