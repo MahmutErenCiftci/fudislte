@@ -1,0 +1,40 @@
+# Packaging for FUDISLTE Desktop (roadmap 1.x): pnpm --filter @fudislte/desktop package
+# (unpacked folder) or dist (installer for the current platform).
+# Release builds must be code signed:
+#   Windows: CSC_LINK / CSC_KEY_PASSWORD (or Azure Trusted Signing)
+#   macOS:   Developer ID certificate + notarization (APPLE_ID, APPLE_TEAM_ID, ...)
+# Unsigned builds are for internal testing only.
+appId: com.fudislte.desktop
+# Reuse the Electron binary already installed (and checksum-verified) by the electron
+# package instead of downloading another copy.
+electronDist: node_modules/electron/dist
+productName: FUDISLTE
+directories:
+  output: release
+files:
+  - dist/**
+  - package.json
+# FUDISLTE's own license and notices, next to the LICENSE.electron.txt and
+# LICENSES.chromium.html that electron-builder adds (the shell bundles no other
+# third-party code; the app itself is served by the organization's server).
+extraFiles:
+  - from: ../../LICENSE
+    to: LICENSE.txt
+  - from: ../../NOTICE
+    to: NOTICE.txt
+asar: true
+# Flips Electron fuses (no RunAsNode, no NODE_OPTIONS, ASAR integrity, ...).
+afterPack: scripts/after-pack.cjs
+win:
+  target: nsis
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+mac:
+  target: dmg
+  category: public.app-category.productivity
+  hardenedRuntime: true
+linux:
+  target: AppImage
+  category: Office

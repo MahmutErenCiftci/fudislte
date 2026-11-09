@@ -1,0 +1,152 @@
+# FUDISLTE core stack for a single server.
+#   cp .env.example .env   # then edit
+#   docker compose up -d --build
+# Voice and video: COMPOSE_PROFILES=media adds LiveKit (docs/decisions/0011).
+name: fudislte
+
+# Docker keeps container logs without limit by default; these rotate them.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "5"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    logging: *logging
+    # Docker's 64 MB default is too small for parallel queries.
+    shm_size: 256m
+    environment:
+      POSTGRES_DB: fudislte
+      POSTGRES_USER: fudislte
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fudislte -d fudislte"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    networks: [backend]
+
+  api:
+    build:
+      context: ../..
+      dockerfile: services/api/Dockerfile
+      args:
+        VERSION: ${FUDISLTE_VERSION:-0.1.0}
+    image: fudislte/api:${FUDISLTE_VERSION:-0.1.0}
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      FUDISLTE_DATABASE_URL: postgres://fudislte:${POSTGRES_PASSWORD}@postgres:5432/fudislte?sslmode=disable
+      FUDISLTE_HTTP_ADDR: ":8080"
+      FUDISLTE_PUBLIC_URL: https://${FUDISLTE_DOMAIN}
+      FUDISLTE_COOKIE_SECURE: "true"
+      # Sign-in codes are delivered by email; in production the API refuses to start
+      # without FUDISLTE_SMTP_HOST and FUDISLTE_SMTP_FROM (see `docker compose logs api`).
+      FUDISLTE_SMTP_HOST: ${FUDISLTE_SMTP_HOST:-}
+      FUDISLTE_SMTP_PORT: ${FUDISLTE_SMTP_PORT:-587}
+      FUDISLTE_SMTP_TLS: ${FUDISLTE_SMTP_TLS:-starttls}
+      FUDISLTE_SMTP_USERNAME: ${FUDISLTE_SMTP_USERNAME:-}
+      FUDISLTE_SMTP_PASSWORD: ${FUDISLTE_SMTP_PASSWORD:-}
+      FUDISLTE_SMTP_FROM: ${FUDISLTE_SMTP_FROM:-}
+      # Only Caddy (on the edge network) may set X-Forwarded-For.
+      FUDISLTE_TRUSTED_PROXIES: 172.28.0.0/24
+      FUDISLTE_SETUP_TOKEN: ${FUDISLTE_SETUP_TOKEN:-}
+      FUDISLTE_DATA_DIR: /var/lib/fudislte
+      FUDISLTE_MAX_UPLOAD_MB: ${FUDISLTE_MAX_UPLOAD_MB:-25}
+      # Empty disables voice and video. With the media profile: wss://<domain>/livekit
+      FUDISLTE_LIVEKIT_URL: ${FUDISLTE_LIVEKIT_URL:-}
+      FUDISLTE_LIVEKIT_API_URL: http://livekit:7880
+      FUDISLTE_LIVEKIT_API_KEY: ${FUDISLTE_LIVEKIT_API_KEY:-}
+      FUDISLTE_LIVEKIT_API_SECRET: ${FUDISLTE_LIVEKIT_API_SECRET:-}
+    volumes:
+      - api-data:/var/lib/fudislte
+    healthcheck:
+      test: ["CMD", "/fudislte-api", "healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [backend, edge]
+
+  web:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/web.Dockerfile
+    image: fudislte/web:${FUDISLTE_VERSION:-0.1.0}
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      FUDISLTE_DOMAIN: ${FUDISLTE_DOMAIN:?set FUDISLTE_DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [edge]
+
+  # Voice and video (ADR-0011). Signalling goes through Caddy at /livekit; media uses
+  # one UDP port, TCP as a fallback, and LiveKit's built-in TURN for strict networks.
+  livekit:
+    image: livekit/livekit-server:v1.9.4
+    profiles: [media]
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      LIVEKIT_CONFIG: |
+        port: 7880
+        rtc:
+          tcp_port: 7881
+          udp_port: 7882
+          # Discovered with STUN unless FUDISLTE_LIVEKIT_NODE_IP names it.
+          use_external_ip: true
+          node_ip: "${FUDISLTE_LIVEKIT_NODE_IP:-}"
+        turn:
+          enabled: true
+          udp_port: 3478
+        # Without the media profile these stay empty and the service does not run.
+        keys:
+          "${FUDISLTE_LIVEKIT_API_KEY:-}": "${FUDISLTE_LIVEKIT_API_SECRET:-}"
+        webhook:
+          api_key: ${FUDISLTE_LIVEKIT_API_KEY}
+          urls: ["http://api:8080/api/v1/media/webhook"]
+        logging:
+          level: info
+    ports:
+      - "7881:7881"
+      - "7882:7882/udp"
+      - "3478:3478/udp"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [edge]
+
+networks:
+  # No route to the internet: PostgreSQL is reachable only from the API.
+  backend:
+    internal: true
+  edge:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+
+volumes:
+  postgres-data:
+  # Attachments (ADR-0009): back up with the database.
+  api-data:
+  caddy-data:
+  caddy-config:

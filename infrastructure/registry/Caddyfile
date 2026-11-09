@@ -1,0 +1,13 @@
+# HTTPS in front of the FUDISLTE project registry.
+{
+	admin off
+}
+
+{$REGISTRY_DOMAIN} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+	reverse_proxy registry:8080
+}

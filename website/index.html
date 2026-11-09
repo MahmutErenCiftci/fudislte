@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUDISLTE — Kendi sunucunuzda ekip iş birliği</title>
+  <meta name="description" content="FUDISLTE; mesajlaşma, sesli ve görüntülü odalar, toplantılar, projeler ve beyaz tahtaları kendi sunucunuzda toplayan, kaynak kodu açık bir iş birliği platformudur. Discord, Slack ve Microsoft Teams'e kendi sunucunuzda çalışan alternatif.">
+  <meta name="theme-color" content="#155dfc">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="FUDISLTE — kendi sunucunuzda ekip iş birliği">
+  <meta property="og:description" content="Mesajlaşma, ses ve görüntü, projeler ve beyaz tahta — kendi sunucunuzda, kullanıcı başı lisans olmadan.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="theme-init.js"></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <!-- Icon sprite: simple stroke icons drawn for this page. -->
+  <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H9l-5 4z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10.5 21 7.5v9l-5-3"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20l4.2-1 10.6-10.6a2 2 0 0 0 0-2.8l-.4-.4a2 2 0 0 0-2.8 0L5 15.8z"/><path d="M14 6.5l3.5 3.5"/></symbol>
+    <symbol id="i-kanban" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16M5.5 8h1.5M11.5 8h1M17.5 8h1"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.4 8.2-8 9-4.6-.8-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.8a3.2 3.2 0 0 1 0 6.4M21 20c0-2.6-1.6-4.8-3.9-5.6"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+    <symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 21 2M16 7l3 3M18.5 4.5l2 2"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m4 17 6-5-6-5M12 19h8"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+    <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="7.5" r="1.3"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M9 4h6l-1 6 3 3H7l3-3zM12 13v8"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2.5-6.5z"/></symbol>
+    <symbol id="i-clip" viewBox="0 0 24 24"><path d="M20 11.5l-8 8a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L9.7 17.2a1.7 1.7 0 0 1-2.4-2.4L15 7"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.7 5.7 3.7 9s-1.2 6.3-3.7 9c-2.5-2.7-3.7-5.7-3.7-9S9.5 5.7 12 3z"/></symbol>
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></symbol>
+    <symbol id="i-gpu" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="2"/><circle cx="8" cy="12" r="2.2"/><circle cx="16" cy="12" r="2.2"/><path d="M5 17v3M19 17v3"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main" data-i18n="a11y.skip">İçeriğe geç</a>
+
+  <header class="site-header" id="top">
+    <div class="container header-inner">
+      <a class="brand" href="#top">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M11.5 22V10h9.5M11.5 16h7.5"/></svg>
+        <span>FUDISLTE</span>
+      </a>
+      <nav class="main-nav" id="main-nav" aria-label="Ana menü" data-i18n-attr="aria-label:a11y.nav">
+        <a href="#features" data-i18n="nav.features">Özellikler</a>
+        <a href="#security" data-i18n="nav.security">Güvenlik</a>
+        <a href="#requirements" data-i18n="nav.requirements">Gereksinimler</a>
+        <a href="#install" data-i18n="nav.install">Kurulum</a>
+        <a href="#claude-install" data-i18n="nav.claude">Claude ile kur</a>
+        <a href="#tour" data-i18n="nav.tour">Adım adım</a>
+        <a href="#faq" data-i18n="nav.faq">SSS</a>
+      </nav>
+      <div class="header-actions">
+        <div class="lang-switch" role="group" aria-label="Dil / Language">
+          <button type="button" data-set-lang="tr" aria-pressed="true">TR</button>
+          <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+        </div>
+        <button type="button" class="icon-btn" id="theme-toggle" aria-label="Koyu temaya geç">
+          <svg class="icon icon-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+          <svg class="icon icon-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        </button>
+        <a class="btn btn-primary btn-sm header-github" data-repo="" href="#install">
+          <svg class="icon" aria-hidden="true"><use href="#i-code"/></svg>
+          <span>GitHub</span>
+        </a>
+        <button type="button" class="icon-btn nav-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="Menüyü aç" data-i18n-attr="aria-label:a11y.menu">
+          <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" id="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="pill">
+            <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+            <span data-i18n="hero.badge">Kendi sunucunuzda. Tam kontrol sizde.</span>
+          </p>
+          <h1>
+            <span data-i18n="hero.title1">Ekip çalışmanız için</span>
+            <span class="accent" data-i18n="hero.title2">güvenli ve size ait bir alan.</span>
+          </h1>
+          <p class="lead" data-i18n="hero.lead">FUDISLTE; mesajlaşmayı, sesli ve görüntülü odaları, toplantıları, projeleri ve beyaz tahtaları tek bir yerde toplayan, <strong>kendi sunucunuzda çalışan</strong>, kaynak kodu açık bir iş birliği platformudur. Discord, Slack ve Microsoft Teams'e alternatif: satıcı bulutu yok, kullanıcı başı ücret yok, verileriniz sizde kalır.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="#install">
+              <span data-i18n="hero.ctaInstall">Kurulumu başlat</span>
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+            </a>
+            <a class="btn btn-outline btn-lg" data-repo="" href="#install">
+              <svg class="icon icon-accent" aria-hidden="true"><use href="#i-code"/></svg>
+              <span data-i18n="hero.ctaRepo">Kaynak kodu incele</span>
+            </a>
+          </div>
+          <ul class="checks">
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="hero.check1">Kurumunuz için ücretsiz · kaynak kodu açık</span></li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="hero.check2">Kendi sunucunuzda çalışır</span></li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="hero.check3">GPU gerekmez</span></li>
+          </ul>
+        </div>
+
+        <!-- Decorative product preview built in HTML so it stays sharp and follows the theme. -->
+        <div class="app-mock" aria-hidden="true">
+          <div class="mock-topbar">
+            <div class="mock-brand"><svg class="logo" viewBox="0 0 32 32"><rect width="32" height="32" rx="8"/><path d="M11.5 22V10h9.5M11.5 16h7.5"/></svg>FUDISLTE</div>
+            <div class="mock-search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span data-i18n="mock.search">Her yerde ara…</span><kbd>⌘K</kbd></div>
+            <div class="mock-top-icons">
+              <svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg>
+              <span class="avatar av-blue">O</span>
+            </div>
+          </div>
+          <div class="mock-body">
+            <div class="mock-sidebar">
+              <div class="mock-workspace"><span class="ws-logo">A</span><div><strong>Acme</strong><small>acme.fudislte.local</small></div></div>
+              <ul class="mock-nav">
+                <li><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg><span data-i18n="mock.home">Ana sayfa</span></li>
+                <li class="active"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg><span data-i18n="mock.messages">Mesajlar</span><b>1</b></li>
+                <li><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><span data-i18n="mock.meetings">Toplantılar</span></li>
+                <li><svg class="icon" aria-hidden="true"><use href="#i-mic"/></svg><span data-i18n="mock.rooms">Odalar</span></li>
+                <li><svg class="icon" aria-hidden="true"><use href="#i-kanban"/></svg><span data-i18n="mock.projects">Projeler</span></li>
+                <li><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg><span data-i18n="mock.boards">Beyaz tahta</span></li>
+                <li><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span data-i18n="mock.settings">Ayarlar</span></li>
+              </ul>
+              <p class="mock-label" data-i18n="mock.channels">Kanallar</p>
+              <ul class="mock-channels">
+                <li># <span data-i18n="mock.general">genel</span></li>
+                <li># <span data-i18n="mock.announcements">duyurular</span></li>
+                <li class="active"># backend</li>
+                <li># frontend</li>
+                <li># <span data-i18n="mock.design">tasarım</span></li>
+              </ul>
+            </div>
+            <div class="mock-chat">
+              <div class="mock-chat-head">
+                <div><strong># backend</strong><small data-i18n="mock.topic">Backend ekibi için teknik tartışmalar</small></div>
+                <div class="mock-head-icons"><svg class="icon" aria-hidden="true"><use href="#i-video"/></svg><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><span>12</span></div>
+              </div>
+              <div class="mock-tabs"><span class="active" data-i18n="mock.tabChat">Sohbet</span><span data-i18n="mock.tabFiles">Dosyalar</span><span data-i18n="mock.tabTasks">Görevler</span></div>
+              <div class="mock-pinned"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><div><strong data-i18n="mock.pinned">Sabitlenen mesaj</strong><small data-i18n="mock.pinnedText">API v2 geliştirme süreci ve mimari kararlar</small></div><em data-i18n="mock.goto">Mesaja git →</em></div>
+              <div class="mock-msg">
+                <span class="avatar av-rose">S</span>
+                <div><p><strong>Selin</strong> <time>10:24</time></p><p data-i18n="mock.msg1">Herkese günaydın! 👋 Bugün API v2 kimlik doğrulama modülünü gözden geçiriyoruz.</p><p class="reactions"><span>👍 5</span><span>❤️ 3</span></p></div>
+              </div>
+              <div class="mock-msg">
+                <span class="avatar av-blue">O</span>
+                <div>
+                  <p><strong>Okan</strong> <time>11:02</time></p>
+                  <p data-i18n="mock.msg2">Yeni middleware hazır: yetkisiz istek 404 alıyor.</p>
+                  <div class="mock-code"><div class="mock-code-head">channels.go<span>Go</span></div><pre><code><i>func</i> (s *Server) channel(w, r) {
+  ch, ok := s.visible(r)
+  <i>if</i> !ok {
+    <u data-i18n="mock.codeComment">// varlığı bile sızmaz</u>
+    http.NotFound(w, r)
+    <i>return</i>
+  }
+  s.json(w, ch)
+}</code></pre></div>
+                  <p class="reactions"><span>👍 8</span><span>🚀 4</span></p>
+                </div>
+              </div>
+              <div class="mock-msg">
+                <span class="avatar av-green">M</span>
+                <div><p><strong>Mert</strong> <time>11:28</time></p><p data-i18n="mock.msg3">Harika görünüyor! Testleri de ekledim. 🙌</p></div>
+              </div>
+              <div class="mock-composer"><svg class="icon" aria-hidden="true"><use href="#i-clip"/></svg><span data-i18n="mock.composer">#backend kanalına mesaj yaz…</span><b><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg></b></div>
+            </div>
+            <div class="mock-people">
+              <p class="mock-label"><span data-i18n="mock.people">Kişiler</span> (12)</p>
+              <p class="mock-role" data-i18n="mock.owner">Sahip — 1</p>
+              <div class="person"><span class="avatar av-blue">O<i class="dot online"></i></span><div><strong>Okan</strong><small data-i18n="mock.online">Çevrimiçi</small></div></div>
+              <p class="mock-role" data-i18n="mock.admins">Yöneticiler — 2</p>
+              <div class="person"><span class="avatar av-rose">S<i class="dot busy"></i></span><div><strong>Selin</strong><small data-i18n="mock.inMeeting">Toplantıda</small></div></div>
+              <div class="person"><span class="avatar av-green">M<i class="dot coding"></i></span><div><strong>Mert</strong><small data-i18n="mock.coding">Kodluyor</small></div></div>
+              <p class="mock-role" data-i18n="mock.devs">Geliştiriciler — 6</p>
+              <div class="person"><span class="avatar av-violet">Z<i class="dot online"></i></span><div><strong>Zeynep</strong><small data-i18n="mock.online">Çevrimiçi</small></div></div>
+              <div class="person"><span class="avatar av-amber">B<i class="dot away"></i></span><div><strong>Burak</strong><small data-i18n="mock.inCall">Görüşmede</small></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Highlights -->
+    <section class="highlights" aria-labelledby="highlights-title">
+      <div class="container">
+        <h2 class="sr-only" id="highlights-title" data-i18n="hl.title">Öne çıkanlar</h2>
+        <div class="card-grid four">
+          <article class="card feature">
+            <span class="feature-icon tone-blue"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg></span>
+            <h3 data-i18n="hl.chat.t">Mesajlaşma ve güvenli odalar</h3>
+            <p data-i18n="hl.chat.d">Kanallar, direkt mesajlar, threadler; şifre korumalı ve kısıtlı odalar. Tüm veriler sizin sunucunuzda kalır.</p>
+          </article>
+          <article class="card feature">
+            <span class="feature-icon tone-indigo"><svg class="icon" aria-hidden="true"><use href="#i-video"/></svg></span>
+            <h3 data-i18n="hl.voice.t">Sesli ve görüntülü toplantılar</h3>
+            <p data-i18n="hl.voice.d">Kalıcı ses odaları, video, ekran paylaşımı ve takvim davetli toplantılar — kendi LiveKit sunucunuz üzerinden.</p>
+          </article>
+          <article class="card feature">
+            <span class="feature-icon tone-teal"><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg></span>
+            <h3 data-i18n="hl.board.t">Etkileşimli beyaz tahta</h3>
+            <p data-i18n="hl.board.d">Fikirleri birlikte görselleştirin: birden fazla kişi aynı tahtada, canlı imleçlerle çalışır.</p>
+          </article>
+          <article class="card feature">
+            <span class="feature-icon tone-violet"><svg class="icon" aria-hidden="true"><use href="#i-kanban"/></svg></span>
+            <h3 data-i18n="hl.projects.t">Projeler ve Kanban</h3>
+            <p data-i18n="hl.projects.d">Sürükle-bırak Kanban, liste ve takvim görünümü, sprintler ve odalara bağlı görevler.</p>
+          </article>
+        </div>
+
+        <p class="stats-caption" data-i18n="stats.caption">Tek sunucuda, projenin kendi yük testi aracıyla ölçülen değerler</p>
+        <dl class="stats">
+          <div class="stat">
+            <svg class="icon" aria-hidden="true"><use href="#i-activity"/></svg>
+            <div><dt>1.000</dt><dd data-i18n="stats.streams">eş zamanlı canlı bağlantı, sıfır kayıp olay</dd></div>
+          </div>
+          <div class="stat">
+            <svg class="icon" aria-hidden="true"><use href="#i-zap"/></svg>
+            <div><dt>&lt; 10 ms</dt><dd data-i18n="stats.latency">p99 gecikme, 200 kişi çevrimiçi</dd></div>
+          </div>
+          <div class="stat">
+            <svg class="icon" aria-hidden="true"><use href="#i-chip"/></svg>
+            <div><dt>~100 MB</dt><dd data-i18n="stats.memory">API belleği, 1.000 kullanıcıda</dd></div>
+          </div>
+          <div class="stat">
+            <svg class="icon" aria-hidden="true"><use href="#i-tag"/></svg>
+            <div><dt>0</dt><dd data-i18n="stats.price">kullanıcı başı lisans ücreti</dd></div>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- Why -->
+    <section class="section" id="why" aria-labelledby="why-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow" data-i18n="why.eyebrow">Ne işe yarar?</p>
+          <h2 id="why-title" data-i18n="why.title">Ekibinizin tüm iletişimi tek yerde, kendi altyapınızda</h2>
+          <p data-i18n="why.lead">Sohbet için bir araç, toplantı için başka biri, görevler için üçüncüsü… FUDISLTE bunları tek bir uygulamada birleştirir ve şirket verisini üçüncü taraf bir buluta göndermeden çalışır.</p>
+        </header>
+        <div class="card-grid three">
+          <article class="card why">
+            <svg class="icon icon-lg" aria-hidden="true"><use href="#i-server"/></svg>
+            <h3 data-i18n="why.data.t">Verileriniz sizde</h3>
+            <p data-i18n="why.data.d">Mesajlar, dosyalar ve kayıtlar kendi sunucunuzdaki PostgreSQL veritabanında ve diskinizde durur. Veritabanı internete kapalı bir iç ağdadır; dışarıya yalnızca 80/443 açılır.</p>
+          </article>
+          <article class="card why">
+            <svg class="icon icon-lg" aria-hidden="true"><use href="#i-tag"/></svg>
+            <h3 data-i18n="why.cost.t">Kullanıcı başı ücret yok</h3>
+            <p data-i18n="why.cost.d">Kurumunuzun kendi kullanımı için ücretsiz. İstediğiniz kadar kullanıcı ve çalışma alanı; kodu inceleyebilir, kendi kurulumunuzda ihtiyacınıza göre değiştirebilirsiniz.</p>
+          </article>
+          <article class="card why">
+            <svg class="icon icon-lg" aria-hidden="true"><use href="#i-box"/></svg>
+            <h3 data-i18n="why.simple.t">Basit kurulum ve işletim</h3>
+            <p data-i18n="why.simple.d">Tek bir Docker Compose komutuyla ayağa kalkar; Caddy HTTPS sertifikasını otomatik alır. Yedekleme, geri yükleme ve geri yükleme tatbikatı scriptleri hazırdır.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- All features -->
+    <section class="section section-alt" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow" data-i18n="feat.eyebrow">Özellikler</p>
+          <h2 id="features-title" data-i18n="feat.title">Bir ekibin ihtiyaç duyduğu her şey</h2>
+          <p data-i18n="feat.lead">Sürüm 0.1.0 ile gelen, çalışan ve test edilmiş özellikler. Arayüz Türkçe ve İngilizcedir; her kullanıcı dilini ayarlardan seçer.</p>
+        </header>
+        <div class="card-grid features-grid">
+          <article class="card detail">
+            <h3><span class="feature-icon tone-blue sm"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg></span><span data-i18n="f.msg.t">Mesajlaşma</span></h3>
+            <ul class="ticks">
+              <li data-i18n="f.msg.1">Herkese açık ve özel kanallar</li>
+              <li data-i18n="f.msg.2">Direkt ve grup mesajları</li>
+              <li data-i18n="f.msg.3">Threadler, tepkiler, bahsetmeler ve sabitlenen mesajlar</li>
+              <li data-i18n="f.msg.4">Çevrimiçi durumu, durum mesajı, “yazıyor…” göstergesi ve bildirimler</li>
+              <li data-i18n="f.msg.5">Önizlemeli dosya ekleri ve Dosyalar sekmesi</li>
+              <li data-i18n="f.msg.6">Mesaj arama, kanal arşivleme ve mesaj saklama süresi</li>
+            </ul>
+          </article>
+          <article class="card detail">
+            <h3><span class="feature-icon tone-amber sm"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></span><span data-i18n="f.rooms.t">Güvenli odalar</span></h3>
+            <ul class="ticks">
+              <li data-i18n="f.rooms.1">Açık, şifre korumalı ve kısıtlı odalar</li>
+              <li data-i18n="f.rooms.2">Argon2id ile saklanan oda şifreleri ve şifre yenileme</li>
+              <li data-i18n="f.rooms.3">Süresi dolan giriş izinleri</li>
+              <li data-i18n="f.rooms.4">Şifre yetkinin yerine geçmez: yetkisi olmayan doğru şifreyle de giremez</li>
+              <li data-i18n="f.rooms.5">Erişim kaldırılınca mesajlar, dosyalar, arama ve canlı olaylarda her yerde anında biter</li>
+            </ul>
+          </article>
+          <article class="card detail">
+            <h3><span class="feature-icon tone-indigo sm"><svg class="icon" aria-hidden="true"><use href="#i-video"/></svg></span><span data-i18n="f.voice.t">Ses ve görüntü</span></h3>
+            <ul class="ticks">
+              <li data-i18n="f.voice.1">Kalıcı ses odaları: sayfa değiştirince görüşme kesilmez</li>
+              <li data-i18n="f.voice.2">Video ve ekran paylaşımı (masaüstünde kaynak seçici)</li>
+              <li data-i18n="f.voice.3">Bas-konuş, sessize alma, kişi başı ses seviyesi</li>
+              <li data-i18n="f.voice.4">Moderasyon araçları</li>
+              <li data-i18n="f.voice.5">Takvim davetli (.ics) planlı toplantılar</li>
+              <li data-i18n="f.voice.6">Kendi LiveKit sunucunuz; kısıtlı ağlar için dahili TURN</li>
+            </ul>
+          </article>
+          <article class="card detail">
+            <h3><span class="feature-icon tone-violet sm"><svg class="icon" aria-hidden="true"><use href="#i-kanban"/></svg></span><span data-i18n="f.proj.t">Projeler</span></h3>
+            <ul class="ticks">
+              <li data-i18n="f.proj.1">Herkese açık ve özel projeler</li>
+              <li data-i18n="f.proj.2">Kanban: sürükle-bırak, klavyeyle de</li>
+              <li data-i18n="f.proj.3">Liste ve takvim görünümleri, filtreler</li>
+              <li data-i18n="f.proj.4">Atananlar, kontrol listeleri, yorumlar ve etkinlik geçmişi</li>
+              <li data-i18n="f.proj.5">Sprintler, düzenlenebilir iş akışları ve etiketler</li>
+              <li data-i18n="f.proj.6">Odalara ve kanallara bağlı görevler</li>
+            </ul>
+          </article>
+          <article class="card detail">
+            <h3><span class="feature-icon tone-teal sm"><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg></span><span data-i18n="f.board.t">Beyaz tahta</span></h3>
+            <ul class="ticks">
+              <li data-i18n="f.board.1">Excalidraw tabanlı tahtalar</li>
+              <li data-i18n="f.board.2">Birden fazla kişi aynı anda, canlı imleçlerle</li>
+              <li data-i18n="f.board.3">Tahtalar kalıcı olarak kaydedilir</li>
+              <li data-i18n="f.board.4">Fontlar dahil her şey kendi sunucunuzdan sunulur; dış istek yok</li>
+            </ul>
+          </article>
+          <article class="card detail">
+            <h3><span class="feature-icon tone-rose sm"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg></span><span data-i18n="f.acc.t">Hesaplar ve yönetim</span></h3>
+            <ul class="ticks">
+              <li data-i18n="f.acc.1">Şifresiz giriş: iş e-postasına gelen tek kullanımlık kod</li>
+              <li data-i18n="f.acc.2">Roller, izinler ve özel roller</li>
+              <li data-i18n="f.acc.3">DNS ile doğrulanan şirket alan adları: çalışanlar davetsiz katılır</li>
+              <li data-i18n="f.acc.4">E-posta davetleri, üye dizini ve oturum yönetimi</li>
+              <li data-i18n="f.acc.5">Denetim kaydı (audit log) ve hesap devre dışı bırakma</li>
+              <li data-i18n="f.acc.6">Çalışma alanları arasında sıkı izolasyon</li>
+            </ul>
+          </article>
+          <article class="card detail">
+            <h3><span class="feature-icon tone-blue sm"><svg class="icon" aria-hidden="true"><use href="#i-monitor"/></svg></span><span data-i18n="f.cli.t">İstemciler</span></h3>
+            <ul class="ticks">
+              <li data-i18n="f.cli.1">Tarayıcıdan çalışan web uygulaması</li>
+              <li data-i18n="f.cli.2">Windows, macOS ve Linux için masaüstü uygulaması (Electron)</li>
+              <li data-i18n="f.cli.3">Türkçe ve İngilizce arayüz, kullanıcı başına seçilebilir</li>
+              <li data-i18n="f.cli.4">Açık ve koyu tema; ⌘K komut paletiyle her yerde arama</li>
+            </ul>
+          </article>
+          <article class="card detail">
+            <h3><span class="feature-icon tone-green sm"><svg class="icon" aria-hidden="true"><use href="#i-server"/></svg></span><span data-i18n="f.ops.t">Operasyon</span></h3>
+            <ul class="ticks">
+              <li data-i18n="f.ops.1">Docker Compose ile tek sunucu kurulumu</li>
+              <li data-i18n="f.ops.2">Otomatik HTTPS (Let's Encrypt) veya özel ağlar için dahili sertifika otoritesi</li>
+              <li data-i18n="f.ops.3">Doğrulamalı yedekleme, geri yükleme ve geri yükleme tatbikatı scriptleri</li>
+              <li data-i18n="f.ops.4">Açılışta otomatik veritabanı migrasyonları</li>
+              <li data-i18n="f.ops.5">Yük testi aracı ve ölçülmüş kapasite</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="preview-box">
+          <span class="badge badge-warn" data-i18n="prev.badge">Önizleme</span>
+          <div>
+            <h3 data-i18n="prev.title">Yolda: yapay zekâ asistanı ve geliştirici özellikleri</h3>
+            <p data-i18n="prev.text">İsteğe bağlı <strong>AI worker</strong> (kaynak gösteren özetler, izinlere saygılı arama, transkripsiyon, onay gerektiren ajanlar) ve opt-in “kodluyor” durumu paylaşan <strong>VS Code eklentisi</strong> depoda hazır, ancak API ile entegrasyonları sürüyor. FUDISLTE bunlar olmadan eksiksiz çalışır.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Security -->
+    <section class="section" id="security" aria-labelledby="security-title">
+      <div class="container split">
+        <header class="section-head left">
+          <p class="eyebrow" data-i18n="sec.eyebrow">Güvenlik</p>
+          <h2 id="security-title" data-i18n="sec.title">Güvenlik sonradan eklenmedi, tasarımın merkezinde</h2>
+          <p data-i18n="sec.lead">Projenin yazılı bir tehdit modeli var; her yeni özellik ona göre tasarlanır ve test edilir.</p>
+          <p class="links-row">
+            <a data-repo="/blob/main/docs/security/threat-model.md" href="#security" data-i18n="sec.threat">Tehdit modeli →</a>
+            <a data-repo="/blob/main/SECURITY.md" href="#security" data-i18n="sec.policy">Güvenlik politikası →</a>
+          </p>
+        </header>
+        <ul class="sec-list">
+          <li><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg><div><strong data-i18n="sec.1.t">Her istek sunucuda yetkilendirilir</strong><p data-i18n="sec.1.d">Göremeyeceğiniz her şey 404 döner; bir kanalın ya da odanın varlığı bile sızmaz.</p></div></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-database"/></svg><div><strong data-i18n="sec.2.t">Çalışma alanları birbirinden yalıtılmış</strong><p data-i18n="sec.2.d">Her kayıt bileşik yabancı anahtarlarla tek bir çalışma alanına bağlıdır; çapraz erişim testlerle doğrulanır.</p></div></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><div><strong data-i18n="sec.3.t">Şifresiz giriş, sunucu tarafı oturumlar</strong><p data-i18n="sec.3.d">Çalınacak parola yok: giriş, iş e-postasına gelen tek kullanımlık kodla. Oturumlar sunucuda tutulur, çerez <code>Secure</code> ve <code>__Host-</code> önekli.</p></div></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-zap"/></svg><div><strong data-i18n="sec.4.t">Kaba kuvvete karşı sınırlar</strong><p data-i18n="sec.4.d">Kod istekleri ve oda şifresi denemeleri hız sınırlıdır; Argon2id hesaplamaları bellek tüketimini sınırlayacak şekilde kuyruklanır.</p></div></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-activity"/></svg><div><strong data-i18n="sec.5.t">Her güvenlik değişikliği kayıt altında</strong><p data-i18n="sec.5.d">Rol, izin, oda ve hesap değişiklikleri denetim kaydına yazılır; yöneticiler ayarlardan inceler.</p></div></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Architecture -->
+    <section class="section section-alt" id="architecture" aria-labelledby="arch-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow" data-i18n="arch.eyebrow">Nasıl çalışır?</p>
+          <h2 id="arch-title" data-i18n="arch.title">Az parça, bilinen teknolojiler</h2>
+          <p data-i18n="arch.lead">Çekirdek yalnızca üç container: Caddy, API ve PostgreSQL. Canlı olayları API'nin kendisi dağıtır; ayrı bir mesaj kuyruğu ya da önbellek gerekmez.</p>
+        </header>
+        <div class="arch">
+          <div class="arch-row">
+            <div class="arch-node"><svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg><strong data-i18n="arch.web">Web uygulaması</strong><small>React · TypeScript</small></div>
+            <div class="arch-node"><svg class="icon" aria-hidden="true"><use href="#i-monitor"/></svg><strong data-i18n="arch.desktop">Masaüstü uygulaması</strong><small>Electron</small></div>
+          </div>
+          <div class="arch-link"><span>HTTPS · 443</span></div>
+          <div class="arch-row">
+            <div class="arch-node wide primary"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><strong>Caddy</strong><small data-i18n="arch.caddy">Otomatik HTTPS, web uygulamasını sunar, ters vekil</small></div>
+          </div>
+          <div class="arch-link"></div>
+          <div class="arch-row">
+            <div class="arch-node wide primary"><svg class="icon" aria-hidden="true"><use href="#i-server"/></svg><strong>API · Go</strong><small data-i18n="arch.api">Modüler monolit: yetkilendirme, mesajlar, odalar, projeler, canlı olaylar</small></div>
+          </div>
+          <div class="arch-link"></div>
+          <div class="arch-row">
+            <div class="arch-node"><svg class="icon" aria-hidden="true"><use href="#i-database"/></svg><strong>PostgreSQL 17</strong><small data-i18n="arch.db">İç ağda, internete kapalı</small></div>
+            <div class="arch-node"><svg class="icon" aria-hidden="true"><use href="#i-box"/></svg><strong data-i18n="arch.files">Dosyalar</strong><small data-i18n="arch.filesD">Sunucu diskindeki volume</small></div>
+          </div>
+          <p class="arch-divider" data-i18n="arch.optional">İsteğe bağlı, aynı Compose projesinde</p>
+          <div class="arch-row">
+            <div class="arch-node optional"><svg class="icon" aria-hidden="true"><use href="#i-mic"/></svg><strong>LiveKit</strong><small data-i18n="arch.livekit">Ses ve görüntü</small></div>
+            <div class="arch-node optional"><svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg><strong>AI worker</strong><small data-i18n="arch.ai">Python · önizleme</small></div>
+          </div>
+        </div>
+        <ul class="chips" aria-label="Teknolojiler" data-i18n-attr="aria-label:arch.stack">
+          <li>Go</li><li>PostgreSQL 17</li><li>React</li><li>TypeScript</li><li>Electron</li><li>LiveKit</li><li>Excalidraw</li><li>Caddy</li><li>Docker Compose</li><li>Python · FastAPI</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Requirements -->
+    <section class="section" id="requirements" aria-labelledby="req-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow" data-i18n="req.eyebrow">Sistem gereksinimleri</p>
+          <h2 id="req-title" data-i18n="req.title">Ne kadar RAM, ne kadar GPU?</h2>
+          <p data-i18n="req.lead">Kısa cevap: <strong>GPU gerekmez.</strong> Mesajlaşma, ses ve görüntü, projeler ve beyaz tahta CPU ile çalışır. GPU yalnızca isteğe bağlı yapay zekâ modelini kendi sunucunuzda hızlı çalıştırmak için faydalıdır.</p>
+        </header>
+
+        <div class="table-wrap">
+          <table class="req-table">
+            <thead>
+              <tr>
+                <th scope="col" data-i18n="req.th.profile">Profil</th>
+                <th scope="col" data-i18n="req.th.users">Kişi</th>
+                <th scope="col" data-i18n="req.th.server">Sunucu</th>
+                <th scope="col">GPU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row" data-i18n="req.small">Küçük ekip</th>
+                <td data-label="Kişi" data-i18n-attr="data-label:req.th.users">5–50</td>
+                <td data-label="Sunucu" data-i18n-attr="data-label:req.th.server" data-i18n="req.small.s"><strong>2 vCPU · 4 GB RAM</strong> · 40 GB SSD</td>
+                <td data-label="GPU"><span class="badge badge-ok" data-i18n="req.none">Gerekmez</span></td>
+              </tr>
+              <tr>
+                <th scope="row" data-i18n="req.voice">Küçük ekip + ses/görüntü</th>
+                <td data-label="Kişi" data-i18n-attr="data-label:req.th.users" data-i18n="req.voice.u">~25 kişi aynı anda görüşmede</td>
+                <td data-label="Sunucu" data-i18n-attr="data-label:req.th.server" data-i18n="req.voice.s"><strong>4 vCPU · 4 GB RAM</strong> · ≥100 Mbit/s simetrik bağlantı</td>
+                <td data-label="GPU"><span class="badge badge-ok" data-i18n="req.none">Gerekmez</span></td>
+              </tr>
+              <tr>
+                <th scope="row" data-i18n="req.medium">Orta</th>
+                <td data-label="Kişi" data-i18n-attr="data-label:req.th.users">50–500</td>
+                <td data-label="Sunucu" data-i18n-attr="data-label:req.th.server" data-i18n="req.medium.s"><strong>4–8 vCPU · 16 GB RAM</strong>; LiveKit ayrı sunucuda, ayrı veya yönetilen PostgreSQL</td>
+                <td data-label="GPU"><span class="badge badge-ok" data-i18n="req.none">Gerekmez</span></td>
+              </tr>
+              <tr>
+                <th scope="row" data-i18n="req.large">Büyük</th>
+                <td data-label="Kişi" data-i18n-attr="data-label:req.th.users">500+</td>
+                <td data-label="Sunucu" data-i18n-attr="data-label:req.th.server" data-i18n="req.large.s">Yük dengeleyici arkasında birden fazla API, LiveKit kümesi</td>
+                <td data-label="GPU"><span class="badge" data-i18n="req.aiOnly">Yalnızca AI için</span></td>
+              </tr>
+              <tr class="row-optional">
+                <th scope="row" data-i18n="req.ai">Yapay zekâ <small>(isteğe bağlı, önizleme)</small></th>
+                <td class="cell-empty" data-label="Kişi" data-i18n-attr="data-label:req.th.users">—</td>
+                <td data-label="Sunucu" data-i18n-attr="data-label:req.th.server" data-i18n="req.ai.s">CPU ile çalışır ama yavaştır; 7B bir dil modeli için <strong>+8 GB RAM</strong> (tahmini)</td>
+                <td data-label="GPU"><span class="badge badge-warn" data-i18n="req.ai.g">Önerilir: NVIDIA, ≥8 GB VRAM (tahmini)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card-grid three req-facts">
+          <article class="card fact">
+            <svg class="icon icon-lg" aria-hidden="true"><use href="#i-chip"/></svg>
+            <h3 data-i18n="req.f1.t">Ölçülen bellek kullanımı</h3>
+            <p data-i18n="req.f1.d">Boşta çekirdek yığın (Caddy + API + PostgreSQL) yaklaşık <strong>60 MB RAM</strong>. 1.000 canlı kullanıcıda API yaklaşık <strong>100 MB RAM</strong> ve 1 CPU çekirdeği kullanır; çok yoğun trafikte (saniyede 200 mesaj) 4 çekirdeğe çıkar.</p>
+          </article>
+          <article class="card fact">
+            <svg class="icon icon-lg" aria-hidden="true"><use href="#i-gpu"/></svg>
+            <h3 data-i18n="req.f2.t">Ses ve görüntü için neden GPU yok?</h3>
+            <p data-i18n="req.f2.d">LiveKit bir SFU'dur: görüntüyü yeniden kodlamaz, akışları katılımcılara iletir. Darboğaz CPU ve bant genişliğidir: kişi başı yön başına ses için 50–100 kbit/s, her video veya ekran paylaşımı için 1–3 Mbit/s.</p>
+          </article>
+          <article class="card fact">
+            <svg class="icon icon-lg" aria-hidden="true"><use href="#i-box"/></svg>
+            <h3 data-i18n="req.f3.t">Disk ve ağ</h3>
+            <p data-i18n="req.f3.d">Çekirdek container imajları yaklaşık <strong>0,6 GB</strong>; üstüne veritabanı ve ekler. Açık portlar: TCP 80/443 (UDP 443 isteğe bağlı). Ses ve görüntü için ayrıca UDP 7882, TCP 7881 ve UDP 3478.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Install -->
+    <section class="section section-alt" id="install" aria-labelledby="install-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow" data-i18n="inst.eyebrow">Kurulum</p>
+          <h2 id="install-title" data-i18n="inst.title">Birkaç dakikada kendi sunucunuzda</h2>
+          <p data-i18n="inst.lead">Docker Compose ile tek sunucuya kurulum. Gerekenler: Docker Engine 26+ ve Compose eklentisi olan bir Linux sunucu, sunucuya yönlenen bir alan adı, bir SMTP relay (giriş kodları e-postayla gelir) ve açık 80/443 portları.</p>
+        </header>
+
+        <!-- Guided installation with the Claude Code skill in .claude/skills/install-fudislte -->
+        <div class="card ai-install" id="claude-install">
+          <div class="ai-install-main">
+            <p class="ai-install-tag" data-i18n="ai.tag">En kolay yol</p>
+            <h3 class="ai-install-title">
+              <span class="feature-icon tone-violet sm"><svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg></span>
+              <span data-i18n="ai.title">Claude ile tek cümlede kurun</span>
+            </h3>
+            <p data-i18n="ai.lead">FUDISLTE, Claude Code için hazır bir kurulum becerisiyle (skill) gelir. IT ekibiniz depoyu sunucuda açıp ne istediğini yazar; Claude kurulumu baştan sona yürütür, her değişiklikten önce onay ister.</p>
+            <div class="code-block">
+              <div class="code-head"><span>bash</span><button type="button" class="copy-btn">Kopyala</button></div>
+              <pre><code>git clone <span data-repo-text>https://github.com/MahmutErenCiftci/fudislte</span>.git fudislte
+cd fudislte
+claude "<span data-i18n="ai.prompt">FUDISLTE'yi bu sunucuya kur</span>"</code></pre>
+            </div>
+            <p class="links-row">
+              <a data-repo="/blob/main/.claude/skills/install-fudislte/SKILL.md" href="#claude-install" data-i18n="ai.skill">Skill'i inceleyin →</a>
+              <a href="https://claude.com/claude-code" rel="noopener" data-i18n="ai.claude">Claude Code nedir? →</a>
+            </p>
+          </div>
+          <div class="ai-install-side">
+            <p class="ai-install-subtitle" data-i18n="ai.does">Claude sizin için:</p>
+            <ul class="ticks">
+              <li data-i18n="ai.1">Sunucuyu kontrol eder: bellek, disk, Docker, portlar, alan adı ve e-posta sunucusuna erişim</li>
+              <li data-i18n="ai.2">Eksikleri onayınızla tamamlar: Docker, güvenlik duvarı kuralları</li>
+              <li data-i18n="ai.3">Ayar dosyasını güçlü, rastgele şifrelerle yazar</li>
+              <li data-i18n="ai.4">Canlıya almadan önce test e-postası gönderir</li>
+              <li data-i18n="ai.5">Sistemi başlatır; HTTPS'i, yönlendirmeyi ve uygulamayı doğrular</li>
+              <li data-i18n="ai.6">Günlük, istenirse şifreli yedeklemeyi kurar ve ilk adımları gösterir</li>
+            </ul>
+            <p class="ai-install-note" data-i18n="ai.note">Güvenliği hiçbir zaman gevşetmez; e-posta şifreniz sohbete girmez. Adımların hepsini aşağıdaki gibi elle de yapabilirsiniz.</p>
+          </div>
+        </div>
+
+        <h3 class="manual-title" data-i18n="inst.manual">Elle kurulum</h3>
+
+        <ol class="steps">
+          <li class="step">
+            <div class="step-text">
+              <h3 data-i18n="inst.s1.t">Depoyu klonlayın</h3>
+              <p data-i18n="inst.s1.d">Örnek ortam dosyasını kopyalayın.</p>
+            </div>
+            <div class="code-block">
+              <div class="code-head"><span>bash</span><button type="button" class="copy-btn">Kopyala</button></div>
+              <pre><code>git clone <span data-repo-text>https://github.com/MahmutErenCiftci/fudislte</span>.git fudislte
+cd fudislte/infrastructure/docker
+cp .env.example .env</code></pre>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-text">
+              <h3 data-i18n="inst.s2.t"><code>.env</code> dosyasını düzenleyin</h3>
+              <p data-i18n="inst.s2.d">Alan adınızı, güçlü bir veritabanı şifresini (<code>openssl rand -base64 32</code>) ve SMTP ayarlarını girin.</p>
+            </div>
+            <div class="code-block">
+              <div class="code-head"><span>.env</span><button type="button" class="copy-btn">Kopyala</button></div>
+              <pre><code>FUDISLTE_DOMAIN=chat.example.com
+POSTGRES_PASSWORD=&lt;openssl rand -base64 32&gt;
+FUDISLTE_SMTP_HOST=smtp.example.com
+FUDISLTE_SMTP_PORT=587
+FUDISLTE_SMTP_USERNAME=fudislte@example.com
+FUDISLTE_SMTP_PASSWORD=&lt;smtp-password&gt;
+FUDISLTE_SMTP_FROM="FUDISLTE &lt;fudislte@example.com&gt;"</code></pre>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-text">
+              <h3 data-i18n="inst.s3.t">Başlatın</h3>
+              <p data-i18n="inst.s3.d">İmajlar derlenir, Caddy sertifikayı alır ve API veritabanı migrasyonlarını uygular. Ardından kurulum anahtarını loglardan alın.</p>
+            </div>
+            <div class="code-block">
+              <div class="code-head"><span>bash</span><button type="button" class="copy-btn">Kopyala</button></div>
+              <pre><code>docker compose up -d --build
+docker compose logs api | grep setup_token</code></pre>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-text">
+              <h3 data-i18n="inst.s4.t">İlk çalışma alanını oluşturun</h3>
+              <p data-i18n="inst.s4.d"><code>https://alan-adınız</code> adresini açın; kurulum anahtarını ve iş e-postanızı girin, gelen kodla doğrulayın ve çalışma alanınızı oluşturun. Sonra <em>Ayarlar → Erişim</em> bölümünden şirket alan adınızı ekleyin; çalışanlar davet beklemeden iş e-postalarıyla katılır. <em>Ayarlar → Güvenlik</em> bölümünden de çalışanlara hazır hesaplar için erişim anahtarı üretebilirsiniz.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="tabs" data-tabs>
+          <div class="tab-list" role="tablist" aria-label="Ek kurulum adımları" data-i18n-attr="aria-label:inst.tabs">
+            <button type="button" role="tab" id="tab-voice" aria-controls="panel-voice" aria-selected="true" data-i18n="inst.tab.voice">Ses ve görüntü</button>
+            <button type="button" role="tab" id="tab-backup" aria-controls="panel-backup" aria-selected="false" tabindex="-1" data-i18n="inst.tab.backup">Yedekleme</button>
+            <button type="button" role="tab" id="tab-upgrade" aria-controls="panel-upgrade" aria-selected="false" tabindex="-1" data-i18n="inst.tab.upgrade">Güncelleme</button>
+            <button type="button" role="tab" id="tab-ai" aria-controls="panel-ai" aria-selected="false" tabindex="-1" data-i18n="inst.tab.ai">Yapay zekâ</button>
+            <button type="button" role="tab" id="tab-local" aria-controls="panel-local" aria-selected="false" tabindex="-1" data-i18n="inst.tab.local">Yerelde dene</button>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-voice" aria-labelledby="tab-voice">
+            <p data-i18n="inst.voice.d">LiveKit'i FUDISLTE'nin yanında çalıştırın. Anahtar ve gizli değeri üretin, <code>.env</code> içinde <code>COMPOSE_PROFILES=media</code> ve <code>FUDISLTE_LIVEKIT_URL=wss://&lt;alan-adınız&gt;/livekit</code> değerlerini ayarlayın, güvenlik duvarında UDP 7882, TCP 7881 ve UDP 3478'i açın.</p>
+            <div class="code-block">
+              <div class="code-head"><span>bash</span><button type="button" class="copy-btn">Kopyala</button></div>
+              <pre><code>echo "FUDISLTE_LIVEKIT_API_KEY=API$(openssl rand -hex 6)" &gt;&gt; .env
+echo "FUDISLTE_LIVEKIT_API_SECRET=$(openssl rand -hex 24)" &gt;&gt; .env
+# .env: COMPOSE_PROFILES=media
+#       FUDISLTE_LIVEKIT_URL=wss://chat.example.com/livekit
+docker compose up -d</code></pre>
+            </div>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-backup" aria-labelledby="tab-backup" hidden>
+            <p data-i18n="inst.backup.d">Scriptler veritabanını ve ekleri birlikte yedekler, sonucu doğrular ve isteğe bağlı olarak <code>age</code> ile şifreler. Geri yükleme her tabloyu ve dosyayı kontrol eder; tatbikat scripti çalışan sisteme dokunmadan geri yüklemeyi prova eder. Depo kökünden çalıştırın.</p>
+            <div class="code-block">
+              <div class="code-head"><span>bash</span><button type="button" class="copy-btn">Kopyala</button></div>
+              <pre><code>scripts/ops/backup.sh -p fudislte -o /var/backups/fudislte
+scripts/ops/restore.sh -p fudislte -i /var/backups/fudislte/&lt;backup&gt;
+scripts/ops/restore-drill.sh</code></pre>
+            </div>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-upgrade" aria-labelledby="tab-upgrade" hidden>
+            <p data-i18n="inst.upgrade.d">Önce yedek alın ve sürüm notlarını okuyun. API, veritabanı migrasyonlarını açılışta bir kilit altında uygular.</p>
+            <div class="code-block">
+              <div class="code-head"><span>bash</span><button type="button" class="copy-btn">Kopyala</button></div>
+              <pre><code>cd fudislte/infrastructure/docker
+git pull
+docker compose up -d --build</code></pre>
+            </div>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-ai" aria-labelledby="tab-ai" hidden>
+            <p data-i18n="inst.ai.d">Önizleme aşamasında. Worker hiçbir port açmaz, internet erişimi olmayan iç ağlarda çalışır ve kendi vektör veritabanını tutar. Model sunucusu olarak aynı yığında Ollama'yı veya ağınızdaki bir vLLM sunucusunu kullanın. Önce <code>.env</code> dosyasına <code>FUDISLTE_AI_SHARED_SECRET</code> ve <code>FUDISLTE_AI_POSTGRES_PASSWORD</code> ekleyin (her biri <code>openssl rand -hex 32</code>).</p>
+            <div class="code-block">
+              <div class="code-head"><span>bash</span><button type="button" class="copy-btn">Kopyala</button></div>
+              <pre><code>docker compose -f compose.yml -f compose.ai.yml --profile ollama up -d --build</code></pre>
+            </div>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-local" aria-labelledby="tab-local" hidden>
+            <p data-i18n="inst.local.d">Aynı imajlar geliştirici makinesinde düz HTTP ile çalışır; Windows'ta Docker Desktop gerekmez, Docker Engine WSL içinde çalışır. <code>http://localhost:8088</code> adresini açın; giriş kodları SMTP yerine komutla gösterilir. Bu yapılandırmayı asla ağa açmayın.</p>
+            <div class="code-block">
+              <div class="code-head"><span>powershell</span><button type="button" class="copy-btn">Kopyala</button></div>
+              <pre><code>wsl -d Ubuntu-24.04 -u root -- bash scripts/wsl/install-docker.sh
+wsl -d Ubuntu-24.04 -- bash scripts/wsl/docker-local.sh up
+wsl -d Ubuntu-24.04 -- bash scripts/wsl/docker-local.sh codes</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <p class="note" data-i18n="inst.note">Ayrıntılı rehberler: <a data-repo="/blob/main/docs/deployment/docker-compose.md" href="#install">Docker Compose ile kurulum</a> · <a data-repo="/blob/main/docs/deployment/backup-restore.md" href="#install">Yedekleme ve geri yükleme</a>. İnternete açık olmayan ağlarda Caddy'nin dahili sertifika otoritesini kullanabilirsiniz.</p>
+      </div>
+    </section>
+
+    <!-- Walkthrough: a company's first hour, drawn in HTML from screenshots of a fresh install. -->
+    <section class="section section-tour" id="tour" aria-labelledby="tour-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow" data-i18n="tour.eyebrow">Adım adım</p>
+          <h2 id="tour-title" data-i18n="tour.title">Bir şirketin ilk saati</h2>
+          <p data-i18n="tour.lead">IT sorumlusu Kerem FUDISLTE'yi kurar, yeni çalışan Elif ilk kez girer. Gerçek bir kurulumda göreceğiniz ekranlar, sırasıyla.</p>
+        </header>
+
+        <div class="tour" data-tour>
+          <div class="tour-steps" role="tablist" aria-orientation="vertical" aria-label="Adımlar" data-i18n-attr="aria-label:tour.steps">
+            <button type="button" role="tab" id="tour-tab-1" aria-controls="tour-panel-1" aria-selected="true">
+              <span class="tour-num">1</span>
+              <span class="tour-step-text"><span class="tour-who it" data-i18n="tour.who.it">IT</span><strong data-i18n="tour.1.t">Claude sunucuya kurar</strong><span data-i18n="tour.1.d">Tek cümle yazılır; Claude sunucuyu kontrol eder, ayarları yazar, e-postayı dener ve doğrular.</span></span>
+            </button>
+            <button type="button" role="tab" id="tour-tab-2" aria-controls="tour-panel-2" aria-selected="false" tabindex="-1">
+              <span class="tour-num">2</span>
+              <span class="tour-step-text"><span class="tour-who it" data-i18n="tour.who.it">IT</span><strong data-i18n="tour.2.t">Çalışma alanı oluşur</strong><span data-i18n="tour.2.d">Adres ilk kez açılır; e-postaya gelen kod, şirket adı ve IT'nin adı girilir.</span></span>
+            </button>
+            <button type="button" role="tab" id="tour-tab-3" aria-controls="tour-panel-3" aria-selected="false" tabindex="-1">
+              <span class="tour-num">3</span>
+              <span class="tour-step-text"><span class="tour-who it" data-i18n="tour.who.it">IT</span><strong data-i18n="tour.3.t">Çalışanın hesabı hazırlanır</strong><span data-i18n="tour.3.d">Ad, e-posta, rol ve dil önceden girilir; bir erişim anahtarı üretilir.</span></span>
+            </button>
+            <button type="button" role="tab" id="tour-tab-4" aria-controls="tour-panel-4" aria-selected="false" tabindex="-1">
+              <span class="tour-num">4</span>
+              <span class="tour-step-text"><span class="tour-who it" data-i18n="tour.who.it">IT</span><strong data-i18n="tour.4.t">Anahtar çalışana iletilir</strong><span data-i18n="tour.4.d">Anahtar bir kez gösterilir; hazır mesaj tek tıkla kopyalanır.</span></span>
+            </button>
+            <button type="button" role="tab" id="tour-tab-5" aria-controls="tour-panel-5" aria-selected="false" tabindex="-1">
+              <span class="tour-num">5</span>
+              <span class="tour-step-text"><span class="tour-who emp" data-i18n="tour.who.emp">Çalışan</span><strong data-i18n="tour.5.t">Elif anahtarı yazar</strong><span data-i18n="tour.5.d">Şifre yok, kod beklemek yok: "Erişim anahtarım var" ve anahtar.</span></span>
+            </button>
+            <button type="button" role="tab" id="tour-tab-6" aria-controls="tour-panel-6" aria-selected="false" tabindex="-1">
+              <span class="tour-num">6</span>
+              <span class="tour-step-text"><span class="tour-who emp" data-i18n="tour.who.emp">Çalışan</span><strong data-i18n="tour.6.t">Doğrudan içeride</strong><span data-i18n="tour.6.d">Hesap hazırlanan adla ve rolle açılır; ekip arkadaşları onu hemen görür.</span></span>
+            </button>
+            <button type="button" role="tab" id="tour-tab-7" aria-controls="tour-panel-7" aria-selected="false" tabindex="-1">
+              <span class="tour-num">7</span>
+              <span class="tour-step-text"><span class="tour-who it" data-i18n="tour.who.it">IT</span><strong data-i18n="tour.7.t">Her şey kayıt altında</strong><span data-i18n="tour.7.d">Kim kurdu, kim anahtar üretti, kim katıldı; zamanıyla. 48 saat dolunca herkes e-posta koduyla yeniden girer.</span></span>
+            </button>
+          </div>
+
+          <div class="tour-stage">
+            <!-- 1. Terminal: the install skill -->
+            <div class="tour-panel" role="tabpanel" id="tour-panel-1" aria-labelledby="tour-tab-1">
+              <div class="tm-window tm-dark" aria-hidden="true">
+                <div class="tm-bar"><span class="tm-dots"><i></i><i></i><i></i></span><span class="tm-url">root@sunucu: /opt/fudislte</span></div>
+                <div class="tm-terminal">
+                  <p><span class="tm-prompt">$</span> claude "<span data-i18n="tour.term.cmd">FUDISLTE'yi bu sunucuya kur</span>"</p>
+                  <p class="tm-claude">● <span data-i18n="tour.term.check">Önce sunucuyu kontrol ediyorum.</span></p>
+                  <p><span class="tm-ok">OK</span>  docker     Docker Engine 29.1</p>
+                  <p><span class="tm-ok">OK</span>  port 443   free</p>
+                  <p><span class="tm-ok">OK</span>  dns        chat.acmelojistik.com.tr</p>
+                  <p><span class="tm-ok">OK</span>  smtp       smtp.office365.com:587</p>
+                  <p class="tm-claude">● <span data-i18n="tour.term.config">Ayarları yazdım; şifreleri rastgele ürettim.</span></p>
+                  <p class="tm-claude">● <span data-i18n="tour.term.mail">Test e-postası gönderildi. Gelen kutunuzu kontrol eder misiniz?</span></p>
+                  <p><span class="tm-ok">OK</span>  https      https://chat.acmelojistik.com.tr</p>
+                  <p class="tm-claude">● <span data-i18n="tour.term.done">Hazır. Adresi açıp kurulum anahtarını girin.</span><span class="tm-cursor"></span></p>
+                </div>
+              </div>
+              <p class="tour-caption" data-i18n="tour.1.d">Tek cümle yazılır; Claude sunucuyu kontrol eder, ayarları yazar, e-postayı dener ve doğrular.</p>
+            </div>
+
+            <!-- 2. First visit: create the workspace -->
+            <div class="tour-panel" role="tabpanel" id="tour-panel-2" aria-labelledby="tour-tab-2" hidden>
+              <div class="tm-window" aria-hidden="true">
+                <div class="tm-bar"><span class="tm-dots"><i></i><i></i><i></i></span><span class="tm-url"><svg class="icon"><use href="#i-lock"/></svg>chat.acmelojistik.com.tr/setup</span></div>
+                <div class="tm-auth">
+                  <div class="tm-card">
+                    <div class="tm-brand"><svg class="logo" viewBox="0 0 32 32"><rect width="32" height="32" rx="8"/><path d="M11.5 22V10h9.5M11.5 16h7.5"/></svg>FUDISLTE</div>
+                    <h4 data-i18n="tour.m.setupTitle">Çalışma alanınızı oluşturun</h4>
+                    <p class="tm-sub" data-i18n="tour.m.setupSub">kerem.aydin@acmelojistik.com.tr adresine bir kod gönderdik.</p>
+                    <label data-i18n="tour.m.code">Doğrulama kodu</label>
+                    <div class="tm-input tm-code">5750 4764</div>
+                    <label data-i18n="tour.m.wsName">Çalışma alanı adı</label>
+                    <div class="tm-input">Acme Lojistik A.Ş.</div>
+                    <label data-i18n="tour.m.yourName">Adınız</label>
+                    <div class="tm-input">Kerem Aydın</div>
+                    <div class="tm-btn" data-i18n="tour.m.create">Çalışma alanını oluştur</div>
+                  </div>
+                </div>
+              </div>
+              <p class="tour-caption" data-i18n="tour.2.d">Adres ilk kez açılır; e-postaya gelen kod, şirket adı ve IT'nin adı girilir.</p>
+            </div>
+
+            <!-- 3. Settings → Security: create an access key -->
+            <div class="tour-panel" role="tabpanel" id="tour-panel-3" aria-labelledby="tour-tab-3" hidden>
+              <div class="tm-window" aria-hidden="true">
+                <div class="tm-bar"><span class="tm-dots"><i></i><i></i><i></i></span><span class="tm-url"><svg class="icon"><use href="#i-lock"/></svg>chat.acmelojistik.com.tr/settings/security</span></div>
+                <div class="tm-app">
+                  <div class="tm-side">
+                    <span class="tm-ws">A</span><i></i><i></i><i></i><i></i><i class="on"></i>
+                  </div>
+                  <div class="tm-main tm-dim">
+                    <div class="tm-h" data-i18n="tour.m.settings">Ayarlar</div>
+                    <div class="tm-tabs"><span data-i18n="tour.m.users">Kullanıcılar</span><span data-i18n="tour.m.access">Erişim</span><span class="on" data-i18n="tour.m.security">Güvenlik</span></div>
+                    <div class="tm-block"></div><div class="tm-block short"></div>
+                  </div>
+                  <div class="tm-dialog">
+                    <h4 data-i18n="tour.m.keyTitle">Erişim anahtarı oluştur</h4>
+                    <label data-i18n="tour.m.fullName">Ad soyad</label>
+                    <div class="tm-input">Elif Şahin</div>
+                    <label data-i18n="tour.m.email">E-posta</label>
+                    <div class="tm-input">elif.sahin@acmelojistik.com.tr</div>
+                    <div class="tm-row3">
+                      <div><label data-i18n="tour.m.role">Rol</label><div class="tm-input tm-select">Developer</div></div>
+                      <div><label data-i18n="tour.m.lang">Dil</label><div class="tm-input tm-select" data-i18n="tour.m.turkish">Türkçe</div></div>
+                      <div><label data-i18n="tour.m.valid">Geçerlilik</label><div class="tm-input tm-select" data-i18n="tour.m.days">14 gün</div></div>
+                    </div>
+                    <div class="tm-actions"><span class="tm-btn ghost" data-i18n="tour.m.cancel">Vazgeç</span><span class="tm-btn"><svg class="icon"><use href="#i-key"/></svg><span data-i18n="tour.m.createKey">Anahtar oluştur</span></span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="tour-caption" data-i18n="tour.3.d">Ad, e-posta, rol ve dil önceden girilir; bir erişim anahtarı üretilir.</p>
+            </div>
+
+            <!-- 4. The key, shown once -->
+            <div class="tour-panel" role="tabpanel" id="tour-panel-4" aria-labelledby="tour-tab-4" hidden>
+              <div class="tm-window" aria-hidden="true">
+                <div class="tm-bar"><span class="tm-dots"><i></i><i></i><i></i></span><span class="tm-url"><svg class="icon"><use href="#i-lock"/></svg>chat.acmelojistik.com.tr/settings/security</span></div>
+                <div class="tm-app">
+                  <div class="tm-side">
+                    <span class="tm-ws">A</span><i></i><i></i><i></i><i></i><i class="on"></i>
+                  </div>
+                  <div class="tm-main tm-dim">
+                    <div class="tm-h" data-i18n="tour.m.settings">Ayarlar</div>
+                    <div class="tm-tabs"><span data-i18n="tour.m.users">Kullanıcılar</span><span data-i18n="tour.m.access">Erişim</span><span class="on" data-i18n="tour.m.security">Güvenlik</span></div>
+                    <div class="tm-block"></div><div class="tm-block short"></div>
+                  </div>
+                  <div class="tm-dialog">
+                    <h4 data-i18n="tour.m.ready">Anahtar hazır</h4>
+                    <p class="tm-sub" data-i18n="tour.m.readyText">Bu anahtarı Elif Şahin kişisine iletin. 22 Kasım'a kadar geçerli.</p>
+                    <div class="tm-key">TWE53-ECS66-XEPC1-QRKDF<small data-i18n="tour.m.once">Anahtar yalnızca şimdi gösterilir.</small></div>
+                    <div class="tm-actions start"><span class="tm-btn ghost"><svg class="icon"><use href="#i-copy"/></svg><span data-i18n="tour.m.copyKey">Anahtarı kopyala</span></span><span class="tm-btn ghost"><svg class="icon"><use href="#i-chat"/></svg><span data-i18n="tour.m.copyMsg">Mesajı kopyala</span></span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="tour-caption" data-i18n="tour.4.d">Anahtar bir kez gösterilir; hazır mesaj tek tıkla kopyalanır.</p>
+            </div>
+
+            <!-- 5. Employee: sign in with the key -->
+            <div class="tour-panel" role="tabpanel" id="tour-panel-5" aria-labelledby="tour-tab-5" hidden>
+              <div class="tm-window" aria-hidden="true">
+                <div class="tm-bar"><span class="tm-dots"><i></i><i></i><i></i></span><span class="tm-url"><svg class="icon"><use href="#i-lock"/></svg>chat.acmelojistik.com.tr/login?key=1</span></div>
+                <div class="tm-auth">
+                  <div class="tm-card">
+                    <div class="tm-brand"><svg class="logo" viewBox="0 0 32 32"><rect width="32" height="32" rx="8"/><path d="M11.5 22V10h9.5M11.5 16h7.5"/></svg>FUDISLTE</div>
+                    <h4 data-i18n="tour.m.keyLogin">Erişim anahtarıyla girin</h4>
+                    <p class="tm-sub" data-i18n="tour.m.keyLoginSub">IT ekibinizin verdiği anahtarı girin; hesabınız açılır ve doğrudan içeri girersiniz.</p>
+                    <label data-i18n="tour.m.accessKey">Erişim anahtarı</label>
+                    <div class="tm-input tm-mono"><svg class="icon"><use href="#i-key"/></svg>TWE53-ECS66-XEPC1-QRKDF</div>
+                    <div class="tm-btn"><span data-i18n="tour.m.open">Hesabımı aç</span><svg class="icon"><use href="#i-arrow"/></svg></div>
+                    <p class="tm-hint" data-i18n="tour.m.keyHint">Büyük-küçük harf ve tireler önemli değil.</p>
+                  </div>
+                </div>
+              </div>
+              <p class="tour-caption" data-i18n="tour.5.d">Şifre yok, kod beklemek yok: "Erişim anahtarım var" ve anahtar.</p>
+            </div>
+
+            <!-- 6. Employee: in -->
+            <div class="tour-panel" role="tabpanel" id="tour-panel-6" aria-labelledby="tour-tab-6" hidden>
+              <div class="tm-window" aria-hidden="true">
+                <div class="tm-bar"><span class="tm-dots"><i></i><i></i><i></i></span><span class="tm-url"><svg class="icon"><use href="#i-lock"/></svg>chat.acmelojistik.com.tr</span></div>
+                <div class="tm-app">
+                  <div class="tm-side">
+                    <span class="tm-ws">A</span><i class="on"></i><i></i><i></i><i></i><i></i>
+                  </div>
+                  <div class="tm-main">
+                    <div class="tm-welcome">
+                      <small data-i18n="tour.m.goodDay">İyi günler,</small>
+                      <strong data-i18n="tour.m.welcome">Hoş geldin Elif!</strong>
+                      <span data-i18n="tour.m.today">Acme Lojistik A.Ş. çalışma alanında Developer olarak çalışıyorsun.</span>
+                    </div>
+                    <div class="tm-panel">
+                      <div class="tm-panel-h" data-i18n="tour.m.joined">Yeni katılanlar</div>
+                      <div class="tm-person"><span class="avatar av-violet">EŞ</span><span><b>Elif Şahin</b><small>Developer</small></span><em data-i18n="tour.m.now">az önce</em></div>
+                      <div class="tm-person"><span class="avatar av-amber">KA</span><span><b>Kerem Aydın</b><small>Owner</small></span><em data-i18n="tour.m.ago">2 dk önce</em></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="tour-caption" data-i18n="tour.6.d">Hesap hazırlanan adla ve rolle açılır; ekip arkadaşları onu hemen görür.</p>
+            </div>
+
+            <!-- 7. IT: audit log -->
+            <div class="tour-panel" role="tabpanel" id="tour-panel-7" aria-labelledby="tour-tab-7" hidden>
+              <div class="tm-window" aria-hidden="true">
+                <div class="tm-bar"><span class="tm-dots"><i></i><i></i><i></i></span><span class="tm-url"><svg class="icon"><use href="#i-lock"/></svg>chat.acmelojistik.com.tr/settings/audit</span></div>
+                <div class="tm-app">
+                  <div class="tm-side">
+                    <span class="tm-ws">A</span><i></i><i></i><i></i><i></i><i class="on"></i>
+                  </div>
+                  <div class="tm-main">
+                    <div class="tm-h" data-i18n="tour.m.audit">Denetim kayıtları</div>
+                    <div class="tm-table">
+                      <div class="tm-tr head"><span data-i18n="tour.m.time">Zaman</span><span data-i18n="tour.m.person">Kişi</span><span data-i18n="tour.m.event">Olay</span></div>
+                      <div class="tm-tr"><span>17:46</span><span><span class="avatar av-violet">EŞ</span>Elif Şahin</span><span data-i18n="tour.m.ev3">Erişim anahtarıyla katıldı</span></div>
+                      <div class="tm-tr"><span>17:45</span><span><span class="avatar av-amber">KA</span>Kerem Aydın</span><span data-i18n="tour.m.ev2">Erişim anahtarı oluşturdu · Developer</span></div>
+                      <div class="tm-tr"><span>17:45</span><span><span class="avatar av-amber">KA</span>Kerem Aydın</span><span data-i18n="tour.m.ev1">Sunucuyu kurdu</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="tour-caption" data-i18n="tour.7.d">Kim kurdu, kim anahtar üretti, kim katıldı; zamanıyla. 48 saat dolunca herkes e-posta koduyla yeniden girer.</p>
+            </div>
+
+            <div class="tour-nav">
+              <button type="button" class="btn btn-outline btn-sm" data-tour-prev disabled><span aria-hidden="true">←</span> <span data-i18n="tour.prev">Önceki</span></button>
+              <span class="tour-count" aria-live="polite"><b data-tour-current>1</b> / 7</span>
+              <button type="button" class="btn btn-primary btn-sm" data-tour-next><span data-i18n="tour.next">Sonraki</span> <span aria-hidden="true">→</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Status and roadmap -->
+    <section class="section" id="roadmap" aria-labelledby="roadmap-title">
+      <div class="container split">
+        <header class="section-head left">
+          <p class="eyebrow" data-i18n="road.eyebrow">Durum</p>
+          <h2 id="roadmap-title" data-i18n="road.title">Sürüm 0.1.0 — erken ama kullanılabilir</h2>
+          <p data-i18n="road.lead">Yol haritasının ilk beş aşaması tamamlandı ve testlerle kapatıldı. Sürüm 0.x olduğu için küçük sürümler arasında değişiklikler olabilir; her değişiklik sürüm notlarında yazılır.</p>
+          <p class="callout" data-i18n="road.callout">Bu sürüm henüz gerçek alan adı, Let's Encrypt ve SMTP ile herkese açık bir sunucuda doğrulanmadı. Canlıya almadan önce bir test sunucusunda deneyin.</p>
+          <p class="links-row">
+            <a data-repo="/blob/main/docs/roadmap.md" href="#roadmap" data-i18n="road.link">Tüm yol haritası →</a>
+            <a data-repo="/blob/main/CHANGELOG.md" href="#roadmap" data-i18n="road.changelog">Değişiklik günlüğü →</a>
+          </p>
+        </header>
+        <ol class="timeline">
+          <li class="done"><strong data-i18n="road.p1">Temel</strong><span data-i18n="road.p1d">Kurulum, şifresiz giriş, çalışma alanları, roller, davetler, denetim kaydı</span></li>
+          <li class="done"><strong data-i18n="road.p2">Mesajlaşma</strong><span data-i18n="road.p2d">Kanallar, DM'ler, threadler, durum, dosyalar, arama</span></li>
+          <li class="done"><strong data-i18n="road.p3">Güvenli odalar</strong><span data-i18n="road.p3d">Şifreli ve kısıtlı odalar, anında iptal</span></li>
+          <li class="done"><strong data-i18n="road.p4">Ses ve görüntü</strong><span data-i18n="road.p4d">LiveKit, ekran paylaşımı, planlı toplantılar</span></li>
+          <li class="done"><strong data-i18n="road.p5">Projeler ve beyaz tahta</strong><span data-i18n="road.p5d">Kanban, sprintler, Excalidraw</span></li>
+          <li><strong data-i18n="road.p6">Geliştirici özellikleri</strong><span data-i18n="road.p6d">GitHub, GitLab, Gitea ve Forgejo bağlantıları, PR/CI etkinliği, kişisel erişim anahtarları</span></li>
+          <li><strong data-i18n="road.p7">Çalışma alanları ve bilgi bankası</strong><span data-i18n="road.p7d">Departman alanları, dokümanlar, wiki, sürüm geçmişi</span></li>
+          <li class="progress"><strong data-i18n="road.p8">Yapay zekâ asistanı ve ajanlar</strong><span data-i18n="road.p8d">Worker hazır; API ve arayüz entegrasyonu sürüyor</span></li>
+          <li class="progress"><strong data-i18n="road.p10">Sağlamlaştırma</strong><span data-i18n="road.p10d">Yük testleri ve yedekleme hazır; SSO (OIDC/SAML), izleme ve imzalı otomatik güncellemeler sırada</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Repository -->
+    <section class="section section-alt" id="repo" aria-labelledby="repo-title">
+      <div class="container split">
+        <header class="section-head left">
+          <p class="eyebrow" data-i18n="repo.eyebrow">Depo</p>
+          <h2 id="repo-title" data-i18n="repo.title">Kaynak kodu açık, katkıya açık</h2>
+          <p data-i18n="repo.lead">Tek bir monorepo: Go API, React web uygulaması, Electron masaüstü uygulaması, Docker Compose dosyaları ve belgeler. Her push ve pull request CI'da derlenir, test edilir ve lisans uyumu (REUSE) kontrol edilir.</p>
+          <ul class="ticks compact">
+            <li data-i18n="repo.l1">Mimari kararlar ADR olarak belgelenmiş</li>
+            <li data-i18n="repo.l2">Katkılar katkıcı lisans sözleşmesiyle (CLA) kabul edilir</li>
+            <li data-i18n="repo.l3">Güvenlik açıkları GitHub üzerinden gizli bildirilir</li>
+          </ul>
+          <p class="links-row">
+            <a data-repo="/blob/main/CONTRIBUTING.md" href="#repo" data-i18n="repo.contrib">Katkı rehberi →</a>
+            <a data-repo="/tree/main/docs/decisions" href="#repo" data-i18n="repo.adr">Mimari kararlar →</a>
+          </p>
+        </header>
+        <div class="code-block tree">
+          <div class="code-head"><span>fudislte/</span></div>
+          <pre><code>apps/web             <u data-i18n="tree.web">React web uygulaması</u>
+apps/desktop         <u data-i18n="tree.desktop">Electron masaüstü uygulaması</u>
+services/api         <u data-i18n="tree.api">Go API + PostgreSQL migrasyonları</u>
+services/ai          <u data-i18n="tree.ai">İsteğe bağlı AI worker (önizleme)</u>
+packages/ui          <u data-i18n="tree.ui">Tasarım token'ları ve bileşenler</u>
+packages/api-client  <u data-i18n="tree.client">Tipli API istemcisi</u>
+packages/platform    <u data-i18n="tree.platform">Web/masaüstü yetenek katmanı</u>
+extensions/vscode    <u data-i18n="tree.vscode">VS Code durum eklentisi (önizleme)</u>
+infrastructure/      <u data-i18n="tree.infra">Docker Compose dağıtımı</u>
+docs/                <u data-i18n="tree.docs">Mimari, kararlar, güvenlik, kurulum</u>
+scripts/ops          <u data-i18n="tree.ops">Yedekleme, geri yükleme, yük testi</u>
+tools/loadtest       <u data-i18n="tree.loadtest">Yük üreteci (Go)</u></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq" aria-labelledby="faq-title">
+      <div class="container narrow">
+        <header class="section-head">
+          <p class="eyebrow" data-i18n="faq.eyebrow">SSS</p>
+          <h2 id="faq-title" data-i18n="faq.title">Sık sorulan sorular</h2>
+        </header>
+        <div class="faq">
+          <details>
+            <summary data-i18n="faq.q1">Ücretsiz mi?</summary>
+            <p data-i18n="faq.a1">Kurumunuzun kendi iç kullanımı için evet: kullanıcı, sunucu veya çalışma alanı başına ücret yoktur, tek maliyetiniz kendi sunucunuzdur. FUDISLTE, PolyForm Internal Use 1.0.0 lisanslıdır; kopyalarını dağıtmak, satmak veya başka kurumlar için barındırmak yasaktır.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q2">GPU gerekiyor mu?</summary>
+            <p data-i18n="faq.a2">Hayır. Mesajlaşma, ses ve görüntü, projeler ve beyaz tahta CPU ile çalışır. GPU yalnızca isteğe bağlı yapay zekâ modelini kendi sunucunuzda hızlı çalıştırmak istediğinizde faydalıdır.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q3">Neden SMTP sunucusu gerekiyor?</summary>
+            <p data-i18n="faq.a3">FUDISLTE'de parola yoktur: herkes iş e-postasına gelen tek kullanımlık kodla giriş yapar. Kendi posta sunucunuzu, Microsoft 365 veya Google Workspace relay'ini ya da bir e-posta sağlayıcısını kullanabilirsiniz.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q4">İnternete kapalı bir ağda çalışır mı?</summary>
+            <p data-i18n="faq.a4">Evet. <code>Caddyfile</code>'a <code>tls internal</code> ekleyin; Caddy kendi kök sertifikasıyla sertifika üretir. Bu kök sertifikayı istemcilere (grup ilkesi veya MDM ile) dağıtın. Masaüstü uygulaması HTTPS ister ve işletim sisteminin sertifika deposuna güvenir.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q5">Verilerim nerede tutuluyor?</summary>
+            <p data-i18n="faq.a5">Yalnızca sizin sunucunuzda: PostgreSQL veritabanında ve API'nin dosya volume'ünde. Yapay zekâ worker'ını açsanız bile içerik sunucunuzda kalır; ağınızın dışındaki model sunucuları siz izin vermedikçe reddedilir.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q6">Masaüstü uygulamasını nereden indiririm?</summary>
+            <p data-i18n="faq.a6">Windows, macOS ve Linux yükleyicileri depodan <code>pnpm --filter @fudislte/desktop dist</code> ile üretilir. Kurumlar kendi kod imzalama sertifikalarıyla imzalar; imzasız yükleyiciler yalnızca test içindir.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q7">Yapay zekâ olmadan kullanabilir miyim?</summary>
+            <p data-i18n="faq.a7">Evet. Yapay zekâ tamamen isteğe bağlıdır ve şu an önizleme aşamasındadır; FUDISLTE onsuz eksiksiz çalışır.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q8">Nasıl katkı verebilirim?</summary>
+            <p data-i18n="faq.a8">Hata düzeltmeleri için doğrudan pull request açın; yeni özellikler için önce bir issue açın. İlk pull request'inizde katkıcı lisans sözleşmesini (CLA) kabul etmeniz gerekir. Ayrıntılar katkı rehberinde.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final call to action -->
+    <section class="cta">
+      <div class="container">
+      <div class="cta-inner">
+        <div>
+          <h2 data-i18n="cta.title">Ekibinizin alanını bugün kurun</h2>
+          <p data-i18n="cta.text">Kendi sunucunuzda, kurumunuz için ücretsiz, kullanıcı başı ücret olmadan.</p>
+        </div>
+        <div class="hero-actions">
+          <a class="btn btn-light btn-lg" href="#install"><span data-i18n="cta.install">Kurulum adımları</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="btn btn-ghost-light btn-lg" data-repo="" href="#install"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg><span data-i18n="cta.repo">GitHub'da görüntüle</span></a>
+        </div>
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a class="brand" href="#top">
+          <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M11.5 22V10h9.5M11.5 16h7.5"/></svg>
+          <span>FUDISLTE</span>
+        </a>
+        <p data-i18n="footer.tagline">Discord, Slack ve Microsoft Teams'e kendi sunucunuzda çalışan, kaynak kodu açık alternatif.</p>
+      </div>
+      <nav class="footer-links" aria-label="Depo bağlantıları" data-i18n-attr="aria-label:footer.nav">
+        <a data-repo="" href="#top">GitHub</a>
+        <a data-repo="/blob/main/LICENSE" href="#top" data-i18n="footer.license">Lisans</a>
+        <a data-repo="/blob/main/CONTRIBUTING.md" href="#top" data-i18n="footer.contrib">Katkı</a>
+        <a data-repo="/blob/main/SECURITY.md" href="#top" data-i18n="footer.security">Güvenlik</a>
+        <a data-repo="/blob/main/CHANGELOG.md" href="#top" data-i18n="footer.changelog">Değişiklikler</a>
+        <a data-repo="/tree/main/docs" href="#top" data-i18n="footer.docs">Belgeler</a>
+      </nav>
+    </div>
+    <div class="container footer-legal">
+      <p>© 2026 Mahmut Eren Çiftçi · PolyForm Internal Use License 1.0.0</p>
+      <p data-i18n="footer.tm">Discord, Slack ve Microsoft Teams ilgili sahiplerinin ticari markalarıdır; FUDISLTE bu şirketlerle bağlantılı değildir.</p>
+    </div>
+  </footer>
+</body>
+</html>

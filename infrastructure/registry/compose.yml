@@ -1,0 +1,40 @@
+# The FUDISLTE project registry (docs/deployment/registry.md) behind Caddy, which
+# obtains the HTTPS certificate on its own. Run it on a small server of its own.
+#   cp .env.example .env   # then set REGISTRY_DOMAIN and FUDISLTE_REGISTRY_ADMIN_PASSWORD
+#   docker compose up -d --build
+name: fudislte-registry
+
+services:
+  registry:
+    build:
+      context: ../..
+      dockerfile: services/registry/Dockerfile
+    image: fudislte/registry:local
+    restart: unless-stopped
+    environment:
+      FUDISLTE_REGISTRY_ADMIN_PASSWORD: ${FUDISLTE_REGISTRY_ADMIN_PASSWORD:?set FUDISLTE_REGISTRY_ADMIN_PASSWORD in .env}
+      # Caddy is the only way in, and it sets X-Forwarded-For to the real client.
+      FUDISLTE_REGISTRY_TRUST_PROXY: "true"
+    volumes:
+      - registry-data:/var/lib/fudislte-registry
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [registry]
+    environment:
+      REGISTRY_DOMAIN: ${REGISTRY_DOMAIN:?set REGISTRY_DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  # The registrations: back this volume up.
+  registry-data:
+  caddy-data:
+  caddy-config:

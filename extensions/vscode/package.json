@@ -1,0 +1,111 @@
+{
+  "name": "fudislte-presence",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "0.1.0",
+  "publisher": "fudislte",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "fudislte",
+    "presence",
+    "status"
+  ],
+  "main": "./dist/extension.js",
+  "l10n": "./l10n",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "fudislte.connect",
+        "title": "%command.connect%",
+        "category": "FUDISLTE"
+      },
+      {
+        "command": "fudislte.disconnect",
+        "title": "%command.disconnect%",
+        "category": "FUDISLTE"
+      },
+      {
+        "command": "fudislte.togglePresence",
+        "title": "%command.togglePresence%",
+        "category": "FUDISLTE"
+      }
+    ],
+    "configuration": {
+      "title": "FUDISLTE",
+      "properties": {
+        "fudislte.serverUrl": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "markdownDescription": "%config.serverUrl%",
+          "order": 0
+        },
+        "fudislte.presence.enabled": {
+          "type": "boolean",
+          "default": false,
+          "scope": "application",
+          "markdownDescription": "%config.enabled%",
+          "order": 1
+        },
+        "fudislte.presence.shareProject": {
+          "type": "boolean",
+          "default": false,
+          "scope": "application",
+          "markdownDescription": "%config.shareProject%",
+          "order": 2
+        },
+        "fudislte.presence.shareLanguage": {
+          "type": "boolean",
+          "default": false,
+          "scope": "application",
+          "markdownDescription": "%config.shareLanguage%",
+          "order": 3
+        },
+        "fudislte.presence.idleMinutes": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 120,
+          "scope": "application",
+          "markdownDescription": "%config.idleMinutes%",
+          "order": 4
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "typecheck": "tsc -p .",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"test/*.test.ts\"",
+    "vscode:prepublish": "node esbuild.mjs --production",
+    "package": "vsce package --no-dependencies --allow-missing-repository",
+    "check:vsix": "node scripts/check-vsix.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "~20.19.43",
+    "@types/vscode": "~1.90.0",
+    "@vscode/vsce": "^4.1.0",
+    "esbuild": "^0.28.2",
+    "typescript": "~6.0.3"
+  }
+}

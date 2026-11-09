@@ -1,0 +1,12 @@
+{
+  "displayName": "FUDISLTE Presence",
+  "description": "Shows \"Coding\" as your FUDISLTE status while you work in VS Code. Off until you turn it on; shares only the fields you choose.",
+  "command.connect": "Connect",
+  "command.disconnect": "Disconnect",
+  "command.togglePresence": "Toggle Presence Sharing",
+  "config.serverUrl": "Address of your organization's FUDISLTE server, for example `https://chat.example.com`. Set by **FUDISLTE: Connect**. Only `https://` is accepted (`http://` only for `localhost`), and only user settings are read, so a workspace can never send your token elsewhere.",
+  "config.enabled": "Show **Coding** as your FUDISLTE status while you actively work in VS Code. Off by default; only your user settings can turn it on.",
+  "config.shareProject": "Add the name of the workspace folder you are working in (for example `fudislte-api`) to the status text. Folder names that look like paths are never sent.",
+  "config.shareLanguage": "Add the language of the active editor (for example `TypeScript`) to the status text.",
+  "config.idleMinutes": "Minutes without activity in VS Code after which the status is cleared."
+}

@@ -1,0 +1,55 @@
+# FUDISLTE edge: automatic HTTPS, the static web app, and /api → Go API.
+# For servers without public DNS (private networks), add `tls internal` inside the
+# site block and distribute Caddy's root certificate to clients — see
+# docs/deployment/docker-compose.md.
+{
+	admin off
+}
+
+{$FUDISLTE_DOMAIN} {
+	# The live event stream (Server-Sent Events) must not be buffered by compression.
+	@compressible not path /api/v1/events
+	encode @compressible zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Cross-Origin-Opener-Policy "same-origin"
+		# Microphone, camera and screen capture serve voice and video (ADR-0011), this origin only.
+		Permissions-Policy "camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=(), usb=()"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		-Server
+	}
+
+	handle /api/* {
+		reverse_proxy api:8080
+	}
+
+	# LiveKit signalling (WebSocket) on the same origin, so no second certificate or CSP
+	# exception is needed. Media itself goes straight to LiveKit's UDP/TCP ports.
+	handle_path /livekit/* {
+		reverse_proxy livekit:7880
+	}
+
+	# Build output with content-hashed names (scripts, styles, whiteboard fonts): cached for
+	# good, and a missing file is a 404 rather than the app page, so a client still asking
+	# for a previous release's chunk fails clearly.
+	@hashed path /assets/* /excalidraw/*
+	handle @hashed {
+		root * /srv
+		@found file
+		header @found Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		# Revalidated on every load, so a deploy never leaves a page that points at
+		# hashed files which no longer exist.
+		header Cache-Control "no-cache"
+		file_server
+	}
+}

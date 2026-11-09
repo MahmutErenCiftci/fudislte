@@ -1,0 +1,17 @@
+node_modules/
+dist/
+release/
+coverage/
+*.tsbuildinfo
+.vite/
+.env
+.env.*
+!.env.example
+services/api/bin/
+infrastructure/docker/.env
+.DS_Store
+Thumbs.db
+# Personal Claude Code settings
+.claude/settings.local.json
+# Social media drafts (not part of the product)
+marketing/

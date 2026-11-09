@@ -1,0 +1,20 @@
+{
+  "name": "fudislte",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "description": "FUDISLTE — source-available, self-hosted alternative to Discord, Slack and Teams",
+  "packageManager": "pnpm@12.5.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev:api": "wsl -d Ubuntu-24.04 -- bash scripts/wsl/dev-api.sh",
+    "dev:web": "pnpm --filter @fudislte/web dev",
+    "dev:desktop": "pnpm --filter @fudislte/desktop dev",
+    "check:api": "wsl -d Ubuntu-24.04 -- bash scripts/wsl/check-api.sh",
+    "mail:test": "wsl -d Ubuntu-24.04 -- bash scripts/wsl/mail-test.sh",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "test": "pnpm -r test",
+    "build": "pnpm -r build"
+  }
+}

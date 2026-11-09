@@ -1,0 +1,11 @@
+# Build context of services/ai/Dockerfile is the repository root; send only what it uses.
+*
+!LICENSE
+!NOTICE
+!services/ai
+!scripts/licenses/python_notices.py
+services/ai/tests
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.venv

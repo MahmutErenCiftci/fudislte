@@ -1,0 +1,10 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Dependency install scripts stay blocked unless listed as true. esbuild's script only
+# re-verifies the binary that its platform package already provides.
+allowBuilds:
+  # Squirrel installers are not used (NSIS is); its script stays blocked.
+  electron-winstaller: false
+  esbuild: false

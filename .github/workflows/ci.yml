@@ -1,0 +1,170 @@
+# Checks every push to main and every pull request with the same commands as the local
+# checks in CONTRIBUTING.md. Container images are built to prove the Dockerfiles work,
+# never pushed.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: Go API
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: fudislte
+          POSTGRES_PASSWORD: fudislte
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U fudislte"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      FUDISLTE_TEST_DATABASE_URL: postgres://fudislte:fudislte@localhost:5432/postgres?sslmode=disable
+    defaults:
+      run:
+        working-directory: services/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: services/api/go.mod
+          cache-dependency-path: services/api/go.sum
+      - name: gofmt
+        run: test -z "$(gofmt -l . | tee /dev/stderr)"
+      - run: go vet ./...
+      - run: go test -count=1 ./...
+
+  loadtest:
+    name: Load-test tool
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/loadtest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: tools/loadtest/go.mod
+          cache: false
+      - run: test -z "$(gofmt -l . | tee /dev/stderr)"
+      - run: go vet ./...
+      - run: go test -count=1 ./...
+
+  registry:
+    name: Registry service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/registry
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: services/registry/go.mod
+          cache: false
+      - run: test -z "$(gofmt -l . | tee /dev/stderr)"
+      - run: go vet ./...
+      - run: go test -count=1 ./...
+
+  web:
+    name: Web app, desktop shell and packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm --filter @fudislte/web build
+      - name: Third-party notices of the web app
+        run: |
+          node scripts/licenses/notices.mjs --filter "@fudislte/web..." --title "the FUDISLTE web app" > /dev/null
+          node scripts/licenses/font-notices.mjs apps/web/dist/excalidraw/fonts apps/web/node_modules/@fontsource-variable/inter/LICENSE > /dev/null
+
+  ai:
+    name: AI worker
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg17
+        env:
+          POSTGRES_USER: fudislte
+          POSTGRES_PASSWORD: fudislte
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U fudislte"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: bash scripts/wsl/ai-test.sh
+        env:
+          FUDISLTE_AI_VENV: ${{ runner.temp }}/ai-venv
+          FUDISLTE_AI_TEST_ADMIN_URL: postgres://fudislte:fudislte@localhost:5432/postgres
+
+  vscode:
+    name: VS Code extension
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extensions/vscode
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: extensions/vscode/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run package
+      - run: npm run check:vsix
+
+  images:
+    name: Container images and Compose files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f services/api/Dockerfile -t fudislte/api:ci .
+      - run: docker build -f infrastructure/docker/web.Dockerfile -t fudislte/web:ci .
+      - run: docker build -f services/ai/Dockerfile -t fudislte/ai:ci .
+      - run: docker build -f services/registry/Dockerfile -t fudislte/registry:ci .
+      - name: Compose files are valid
+        working-directory: infrastructure/docker
+        env:
+          # Values the example leaves for the operator to fill in.
+          POSTGRES_PASSWORD: ci-only
+          FUDISLTE_AI_SHARED_SECRET: ci-only
+          FUDISLTE_AI_POSTGRES_PASSWORD: ci-only
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+          docker compose --profile media config --quiet
+          docker compose -f compose.yml -f compose.ai.yml --profile ollama config --quiet
+
+  licenses:
+    name: REUSE licensing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pipx run reuse lint

@@ -1,0 +1,19 @@
+# Local override: runs the production images on a developer machine over plain HTTP at
+# http://localhost:8088. Use scripts/wsl/docker-local.sh rather than calling it directly.
+#
+# Emails (setup and sign-in codes, invitations) are printed by `docker compose logs api`
+# unless FUDISLTE_MAIL_TRANSPORT=smtp and the FUDISLTE_SMTP_* settings are provided.
+services:
+  api:
+    environment:
+      FUDISLTE_ENV: development
+      FUDISLTE_PUBLIC_URL: http://localhost:8088
+      FUDISLTE_COOKIE_SECURE: "false"
+      FUDISLTE_MAIL_TRANSPORT: ${FUDISLTE_MAIL_TRANSPORT:-log}
+
+  web:
+    environment:
+      # A port-only site address makes Caddy serve plain HTTP for any host name.
+      FUDISLTE_DOMAIN: ":8088"
+    ports: !override
+      - "8088:8088"

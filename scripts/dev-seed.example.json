@@ -1,0 +1,6 @@
+{
+  "_comment": "Local development accounts only (http://localhost). Never reuse these anywhere else.",
+  "workspace": "FUDISLTE Dev",
+  "owner": { "displayName": "Alex Owner", "email": "alex@fudislte.test", "password": "local dev owner pass 1" },
+  "member": { "displayName": "Dana Developer", "email": "dana@fudislte.test", "password": "local dev member pass 1" }
+}

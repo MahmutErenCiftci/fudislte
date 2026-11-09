@@ -1,0 +1,10 @@
+# Allow-list: the .vsix carries the bundle, the manifest, its translations, the README and
+# the license.
+# Sources, tests, source maps, scripts and node_modules never ship.
+**
+!dist/extension.js
+!package.nls.json
+!package.nls.tr.json
+!l10n/bundle.l10n.tr.json
+!README.md
+!LICENSE

@@ -1,0 +1,6 @@
+# Build context of services/api/Dockerfile is the repository root; send only what it uses.
+*
+!LICENSE
+!NOTICE
+!services/api
+services/api/bin

@@ -1,0 +1,25 @@
+[project]
+name = "fudislte-ai"
+version = "0.1.0"
+description = "Optional internal AI worker for FUDISLTE (ADR-0012)"
+requires-python = ">=3.12,<3.13"
+license = "LicenseRef-PolyForm-Internal-Use-1.0.0"
+# Exact versions used by the Docker image and the tests are pinned in
+# requirements.lock and requirements-dev.lock (docs/architecture/ai-worker.md).
+dependencies = [
+  "fastapi>=0.115",           # MIT
+  "uvicorn>=0.30",            # BSD-3-Clause (plain, without the [standard] extras)
+  "pydantic>=2.8",            # MIT
+  "httpx>=0.27",              # BSD-3-Clause
+  "asyncpg>=0.30",            # Apache-2.0
+  "python-multipart>=0.0.12", # Apache-2.0, multipart parsing for /v1/transcribe
+]
+
+[project.optional-dependencies]
+# Local speech-to-text. Not installed by default; see docs/architecture/ai-worker.md.
+whisper = ["faster-whisper>=1.1"]  # MIT
+dev = ["pytest>=8"]                # MIT
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

@@ -1,0 +1,12 @@
+{
+  "displayName": "FUDISLTE Durum Paylaşımı",
+  "description": "VS Code'da çalışırken FUDISLTE durumunuzu \"Kod yazıyor\" olarak gösterir. Siz açana kadar kapalıdır; yalnızca seçtiğiniz bilgileri paylaşır.",
+  "command.connect": "Bağlan",
+  "command.disconnect": "Bağlantıyı kes",
+  "command.togglePresence": "Durum paylaşımını aç/kapat",
+  "config.serverUrl": "Kuruluşunuzun FUDISLTE sunucusunun adresi, örneğin `https://chat.example.com`. **FUDISLTE: Bağlan** komutu ayarlar. Yalnızca `https://` kabul edilir (`http://` yalnızca `localhost` için) ve yalnızca kullanıcı ayarları okunur; böylece bir çalışma alanı belirtecinizi asla başka bir yere gönderemez.",
+  "config.enabled": "VS Code'da etkin olarak çalışırken FUDISLTE durumunuzu **Kod yazıyor** olarak gösterir. Varsayılan olarak kapalıdır; yalnızca kullanıcı ayarlarınız açabilir.",
+  "config.shareProject": "Üzerinde çalıştığınız çalışma alanı klasörünün adını (örneğin `fudislte-api`) durum metnine ekler. Yol gibi görünen klasör adları asla gönderilmez.",
+  "config.shareLanguage": "Etkin düzenleyicinin dilini (örneğin `TypeScript`) durum metnine ekler.",
+  "config.idleMinutes": "VS Code'da bu kadar dakika etkinlik olmazsa durum temizlenir."
+}

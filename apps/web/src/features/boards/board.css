@@ -1,0 +1,9 @@
+/*
+ * Excalidraw's library browses and publishes to libraries.excalidraw.com; a self-hosted
+ * board stays off external services, so its entry points are hidden.
+ */
+.fudislte-board .default-sidebar-trigger,
+.fudislte-board .library-menu-browse-button,
+.fudislte-board .publish-library {
+  display: none !important;
+}

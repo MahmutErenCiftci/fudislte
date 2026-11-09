@@ -1,0 +1,30 @@
+{
+  "name": "@fudislte/desktop",
+  "productName": "FUDISLTE",
+  "version": "0.1.0",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "description": "FUDISLTE desktop shell",
+  "author": "FUDISLTE",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs && node scripts/run.mjs",
+    "dev:connect": "node scripts/build.mjs && node scripts/run.mjs connect",
+    "smoke": "node scripts/build.mjs && node scripts/run.mjs smoke",
+    "typecheck": "tsc -p .",
+    "test": "vitest run",
+    "package": "node scripts/build.mjs && electron-builder --config electron-builder.yml --dir",
+    "dist": "node scripts/build.mjs && electron-builder --config electron-builder.yml"
+  },
+  "devDependencies": {
+    "@electron/fuses": "^1.8.0",
+    "@fudislte/platform": "workspace:*",
+    "@types/node": "^24.19.2",
+    "electron": "^45.1.0",
+    "electron-builder": "^26.18.0",
+    "esbuild": "^0.28.2",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.5"
+  }
+}

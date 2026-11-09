@@ -1,0 +1,7 @@
+**/node_modules
+**/dist
+**/release
+.git
+.claude
+services/api/bin
+infrastructure/docker/.env

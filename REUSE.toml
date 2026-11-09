@@ -1,0 +1,16 @@
+# Copyright and license of every file in this repository, in the machine-readable form
+# of the REUSE specification (https://reuse.software). Check with `reuse lint`.
+# FUDISLTE is licensed under the PolyForm Internal Use License 1.0.0 (LICENSE, NOTICE,
+# ADR-0016).
+version = 1
+
+[[annotations]]
+path = "**"
+SPDX-FileCopyrightText = "2026 Mahmut Eren Çiftçi"
+SPDX-License-Identifier = "LicenseRef-PolyForm-Internal-Use-1.0.0"
+
+# Derived from shadcn/ui (https://ui.shadcn.com), MIT; our changes are under FUDISLTE's license.
+[[annotations]]
+path = "packages/ui/src/components/**"
+SPDX-FileCopyrightText = ["2026 Mahmut Eren Çiftçi", "2023 shadcn"]
+SPDX-License-Identifier = "LicenseRef-PolyForm-Internal-Use-1.0.0 AND MIT"
