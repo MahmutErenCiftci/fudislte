@@ -2,7 +2,7 @@
   "name": "fudislte-presence",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "fudislte",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",

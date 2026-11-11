@@ -37,7 +37,7 @@ you. The interface is in Turkish and English.
 
 ## Status
 
-Version 0.1.0, complete through roadmap phase 5: foundation, accounts,
+Version 0.1.1, complete through roadmap phase 5: foundation, accounts,
 messaging, secure rooms, voice and video, projects and whiteboards. Developer features,
 knowledge base, AI integration and hardening follow — see the [roadmap](docs/roadmap.md)
 and the [changelog](CHANGELOG.md).

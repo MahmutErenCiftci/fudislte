@@ -1,6 +1,6 @@
 [project]
 name = "fudislte-ai"
-version = "0.1.0"
+version = "0.1.1"
 description = "Optional internal AI worker for FUDISLTE (ADR-0012)"
 requires-python = ">=3.12,<3.13"
 license = "LicenseRef-PolyForm-Internal-Use-1.0.0"

@@ -4,6 +4,18 @@ Notable changes to FUDISLTE. The format follows [Keep a Changelog](https://keepa
 and versions follow [Semantic Versioning](https://semver.org/); while the version is 0.x,
 anything may change between minor versions.
 
+## [0.1.1] — 2026-11-11
+
+The first release with downloadable installers, for Windows, macOS (Apple Silicon) and
+Linux. It contains everything listed under 0.1.0 below, including the security fixes.
+0.1.0 was tagged but never published: its Linux installer failed to build.
+
+### Fixed
+
+- The Linux installer builds: the app's executable is named `fudislte` instead of a name
+  derived from the package name, which is not a valid file name.
+- Release builds run to the end on every platform, so one run shows every failure.
+
 ## [0.1.0] — 2026-11-11
 
 First public version, source-available under the PolyForm Internal Use License 1.0.0.

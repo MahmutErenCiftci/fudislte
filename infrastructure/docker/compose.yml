@@ -36,8 +36,8 @@ services:
       context: ../..
       dockerfile: services/api/Dockerfile
       args:
-        VERSION: ${FUDISLTE_VERSION:-0.1.0}
-    image: fudislte/api:${FUDISLTE_VERSION:-0.1.0}
+        VERSION: ${FUDISLTE_VERSION:-0.1.1}
+    image: fudislte/api:${FUDISLTE_VERSION:-0.1.1}
     restart: unless-stopped
     logging: *logging
     depends_on:
@@ -82,7 +82,7 @@ services:
     build:
       context: ../..
       dockerfile: infrastructure/docker/web.Dockerfile
-    image: fudislte/web:${FUDISLTE_VERSION:-0.1.0}
+    image: fudislte/web:${FUDISLTE_VERSION:-0.1.1}
     restart: unless-stopped
     logging: *logging
     depends_on:

@@ -210,7 +210,7 @@ const EN = {
   'feat.eyebrow': 'Features',
   'feat.title': 'Everything a team needs',
   'feat.lead':
-    'Working, tested features shipped with version 0.1.0. The interface is in Turkish and English; each person picks their language in the settings.',
+    'Working, tested features shipped with version 0.1.1. The interface is in Turkish and English; each person picks their language in the settings.',
   'f.msg.t': 'Messaging',
   'f.msg.1': 'Public and private channels',
   'f.msg.2': 'Direct and group messages',
@@ -367,7 +367,7 @@ const EN = {
     'All versions, release notes and SHA-256 checksums are on the <a data-repo="/releases/latest" href="#download">GitHub Releases</a> page.',
 
   'road.eyebrow': 'Status',
-  'road.title': 'Version 0.1.0',
+  'road.title': 'Version 0.1.1',
   'road.lead':
     'The first five phases of the roadmap are complete and closed with tests. While the version is 0.x, minor versions may change things; every change is written in the release notes.',
   'road.link': 'Full roadmap →',

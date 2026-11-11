@@ -4,5 +4,5 @@
 set -euo pipefail
 here="$(dirname "$0")"
 export CGO_ENABLED=0
-bash "$here/go.sh" build -trimpath -ldflags="-s -w -X main.version=${VERSION:-0.1.0}" -o bin/fudislte-api ./cmd/fudislte-api
+bash "$here/go.sh" build -trimpath -ldflags="-s -w -X main.version=${VERSION:-0.1.1}" -o bin/fudislte-api ./cmd/fudislte-api
 "$here/../../services/api/bin/fudislte-api" version
