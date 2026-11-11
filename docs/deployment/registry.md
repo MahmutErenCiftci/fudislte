@@ -44,7 +44,7 @@ tar czf fudislte-registry.tgz LICENSE NOTICE services/registry infrastructure/re
 scp fudislte-registry.tgz root@SERVER:
 
 # On the server:
-curl -fsSL https://get.docker.com | sh          # Docker Engine, if it is not installed
+# Docker Engine, if it is not installed: https://docs.docker.com/engine/install/
 mkdir -p fudislte && tar xzf fudislte-registry.tgz -C fudislte
 cd fudislte/infrastructure/registry
 cp .env.example .env && nano .env               # REGISTRY_DOMAIN and the password
@@ -53,7 +53,9 @@ docker compose up -d --build
 
 (Once the repository is public, `git clone` replaces the copying.) Then open
 `https://registry.example.org/` and sign in with any user name and the password.
-Instances that have not reported for three days are shown greyed out. To update, copy
+Instances that have not reported for three days are shown greyed out, and those silent
+for 30 days are deleted (they register again if they come back). One IPv4 /24 or IPv6
+/48 can register at most 10 new instances at once, then one every six minutes. To update, copy
 the new files and run `docker compose up -d --build` again; the registrations live in
 the `registry-data` volume.
 

@@ -75,8 +75,10 @@ type Server struct {
 	trustProxy bool
 	now        func() time.Time
 	// reports limits registrations per client address; logins limits wrong passwords.
-	reports *limiter
-	logins  *limiter
+	reports       *limiter
+	logins        *limiter
+	registrations *limiter
+	loginNetworks *limiter
 }
 
 func NewServer(store *Store, password string, trustProxy bool) *Server {
@@ -84,6 +86,10 @@ func NewServer(store *Store, password string, trustProxy bool) *Server {
 		store: store, password: password, trustProxy: trustProxy, now: time.Now,
 		reports: newLimiter(10*time.Second, 30),
 		logins:  newLimiter(10*time.Second, 20),
+		// New instances per IPv4 /24 or IPv6 /48: one network cannot fill the registry with
+		// made-up servers, and many /64s do not multiply password guesses.
+		registrations: newWideLimiter(6*time.Minute, 10),
+		loginNetworks: newWideLimiter(10*time.Second, 40),
 	}
 }
 
@@ -146,6 +152,10 @@ func (s *Server) report(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnprocessableEntity, msg)
 		return
 	}
+	if !s.store.Has(in.InstanceID) && !s.registrations.allow(s.clientIP(r), s.now()) {
+		writeError(w, http.StatusTooManyRequests, "too many new registrations from this network")
+		return
+	}
 	switch err := s.store.Upsert(in, s.now().UTC()); {
 	case errors.Is(err, errWrongSecret):
 		writeError(w, http.StatusForbidden, err.Error())
@@ -186,7 +196,7 @@ func (s *Server) withdraw(w http.ResponseWriter, r *http.Request) {
 func (s *Server) admin(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if _, password, ok := r.BasicAuth(); ok {
-			if !s.logins.allow(s.clientIP(r), s.now()) {
+			if !s.logins.allow(s.clientIP(r), s.now()) || !s.loginNetworks.allow(s.clientIP(r), s.now()) {
 				http.Error(w, "too many attempts", http.StatusTooManyRequests)
 				return
 			}
@@ -207,14 +217,15 @@ func (s *Server) exportCSV(w http.ResponseWriter, _ *http.Request) {
 	_ = cw.Write([]string{"organization", "contact_email", "users", "version", "first_seen", "last_seen"})
 	for _, in := range s.store.List() {
 		_ = cw.Write([]string{
-			csvSafe(in.OrganizationName), in.ContactEmail, strconv.Itoa(in.UserCount), in.Version,
+			csvSafe(in.OrganizationName), csvSafe(in.ContactEmail), strconv.Itoa(in.UserCount), csvSafe(in.Version),
 			in.FirstSeen.Format(time.RFC3339), in.LastSeen.Format(time.RFC3339),
 		})
 	}
 	cw.Flush()
 }
 
-// csvSafe keeps spreadsheets from treating a reported name as a formula.
+// csvSafe keeps spreadsheets from treating a reported value as a formula. Every text
+// column goes through it: an email's local part or a version may start with + or -.
 func csvSafe(s string) string {
 	if s != "" && strings.ContainsRune("=+-@\t\r", rune(s[0])) {
 		return "'" + s
@@ -229,6 +240,7 @@ type limiter struct {
 	burst     float64
 	buckets   map[string]bucket
 	lastSweep time.Time
+	key       func(string) string
 }
 
 const (
@@ -254,19 +266,43 @@ func rateKey(ip string) string {
 	return p.String()
 }
 
+// wideKey groups clients by IPv4 /24 or IPv6 /48, the size of network one party
+// commonly holds.
+func wideKey(ip string) string {
+	addr, err := netip.ParseAddr(ip)
+	if err != nil {
+		return ip
+	}
+	addr = addr.Unmap()
+	bits := 24
+	if addr.Is6() {
+		bits = 48
+	}
+	p, err := addr.Prefix(bits)
+	if err != nil {
+		return ip
+	}
+	return p.String()
+}
+
 type bucket struct {
 	tokens float64
 	at     time.Time
 }
 
 func newLimiter(interval time.Duration, burst int) *limiter {
-	return &limiter{interval: interval, burst: float64(burst), buckets: map[string]bucket{}}
+	return &limiter{interval: interval, burst: float64(burst), buckets: map[string]bucket{}, key: rateKey}
+}
+
+// newWideLimiter keys by IPv4 /24 or IPv6 /48 instead.
+func newWideLimiter(interval time.Duration, burst int) *limiter {
+	return &limiter{interval: interval, burst: float64(burst), buckets: map[string]bucket{}, key: wideKey}
 }
 
 func (l *limiter) allow(key string, now time.Time) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	key = rateKey(key)
+	key = l.key(key)
 	if len(l.buckets) > sweepThreshold && now.Sub(l.lastSweep) >= sweepEvery {
 		l.lastSweep = now
 		for k, b := range l.buckets {

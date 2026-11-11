@@ -79,6 +79,36 @@ func secretMatches(in *Instance, secret string) bool {
 	return subtle.ConstantTimeCompare([]byte(in.SecretHash), []byte(hashSecret(secret))) == 1
 }
 
+// Has reports whether id is registered.
+func (s *Store) Has(id string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	_, ok := s.byID[id]
+	return ok
+}
+
+// staleAfter is how long an instance may stay silent before it is forgotten. Servers
+// report daily, so this only drops servers that are gone (they register again if they
+// come back), and it keeps contact details no longer than needed.
+const staleAfter = 30 * 24 * time.Hour
+
+// ForgetStale removes instances that have not reported for staleAfter.
+func (s *Store) ForgetStale(now time.Time) int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	n := 0
+	for id, in := range s.byID {
+		if now.Sub(in.LastSeen) > staleAfter {
+			delete(s.byID, id)
+			n++
+		}
+	}
+	if n > 0 {
+		s.dirty = true
+	}
+	return n
+}
+
 // Upsert registers a new instance, or refreshes one when the report carries the secret it
 // registered with, so nobody else can overwrite or remove it.
 func (s *Store) Upsert(r Report, now time.Time) error {
@@ -90,6 +120,13 @@ func (s *Store) Upsert(r Report, now time.Time) error {
 			return errWrongSecret
 		}
 	} else {
+		if len(s.byID) >= s.max {
+			for id, old := range s.byID {
+				if now.Sub(old.LastSeen) > staleAfter {
+					delete(s.byID, id)
+				}
+			}
+		}
 		if len(s.byID) >= s.max {
 			return errFull
 		}
@@ -127,7 +164,10 @@ func (s *Store) Run(ctx context.Context, every time.Duration) {
 				slog.Error("registry: save on shutdown", "error", err)
 			}
 			return
-		case <-t.C:
+		case now := <-t.C:
+			if n := s.ForgetStale(now); n > 0 {
+				slog.Info("registry: forgot silent instances", "count", n)
+			}
 			if err := s.Flush(); err != nil {
 				slog.Error("registry: save", "error", err) // retried on the next tick
 			}

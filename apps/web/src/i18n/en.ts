@@ -434,6 +434,7 @@ export const en: Messages = {
   'registration.users': 'Number of users (automatic)',
   'registration.version': 'Version (automatic)',
   'registration.never': 'No messages, files, member lists, IP addresses or anything else are sent.',
+  'registration.privacy': 'Privacy notice',
   'registration.lastSent': 'Last sent: {date}',
   'registration.pending': 'Sending the first report…',
   'registration.failed': 'The last report failed and will be retried in an hour: {error}',

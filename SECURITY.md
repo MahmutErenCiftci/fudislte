@@ -2,8 +2,7 @@
 
 ## Supported versions
 
-FUDISLTE is in early development (0.x). Security fixes go into the latest release only;
-upgrade to receive them.
+Security fixes go into the latest release only; upgrade to receive them.
 
 ## Reporting a vulnerability
 

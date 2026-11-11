@@ -22,5 +22,7 @@ exports.default = async function afterPack(context) {
     [FuseV1Options.EnableNodeCliInspectArguments]: false,
     [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
     [FuseV1Options.OnlyLoadAppFromAsar]: true,
+    // The app never uses file://, so it gets no extra privileges.
+    [FuseV1Options.GrantFileProtocolExtraPrivileges]: false,
   })
 }

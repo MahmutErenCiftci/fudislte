@@ -211,7 +211,8 @@ func expireBatch(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, now tim
 		rows, err := tx.Query(ctx, `
 			SELECT m.id FROM messages m
 			WHERE m.org_id = $1 AND m.created_at < $2::timestamptz - make_interval(days => $3)
-			  AND (m.body <> '' OR NOT EXISTS (SELECT 1 FROM messages r WHERE r.parent_id = m.id))
+			  AND (m.body <> '' OR EXISTS (SELECT 1 FROM attachments a WHERE a.message_id = m.id)
+			       OR NOT EXISTS (SELECT 1 FROM messages r WHERE r.parent_id = m.id))
 			LIMIT $4
 			FOR UPDATE`, orgID, now, days, retentionBatch)
 		if err != nil {
@@ -240,7 +241,7 @@ func expireBatch(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, now tim
 		}
 		if _, err := tx.Exec(ctx, `
 			UPDATE messages SET body = '', deleted_at = coalesce(deleted_at, now()), edited_at = NULL, pinned_at = NULL, pinned_by = NULL
-			WHERE id = ANY ($1) AND body <> ''`, ids); err != nil {
+			WHERE id = ANY ($1) AND (body <> '' OR deleted_at IS NULL)`, ids); err != nil {
 			return err
 		}
 		if _, err := tx.Exec(ctx, `DELETE FROM message_reactions WHERE message_id = ANY ($1)`, ids); err != nil {

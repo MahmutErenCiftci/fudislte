@@ -189,6 +189,9 @@ func (h *Hub) removeLocked(sub *subscriber) {
 // stream is registered, so clients know that later changes will reach them.
 func (h *Hub) Stream(w http.ResponseWriter, r *http.Request) error {
 	id := auth.MustIdentity(r.Context())
+	if h.streams(id.User.ID) >= maxStreamsPerUser {
+		return errTooManyStreams
+	}
 	sub := h.subscribe(id.User.ID, id.SessionID)
 	if sub == nil {
 		return errShuttingDown
@@ -239,6 +242,18 @@ func (h *Hub) Stream(w http.ResponseWriter, r *http.Request) error {
 			return nil
 		}
 	}
+}
+
+// maxStreamsPerUser bounds the live connections one account holds (each costs a goroutine
+// and a buffer); people rarely have more than a few windows and devices open.
+const maxStreamsPerUser = 32
+
+var errTooManyStreams = httpx.NewError(http.StatusTooManyRequests, "too_many_streams", "Too many windows are open for this account. Close some and try again.")
+
+func (h *Hub) streams(userID uuid.UUID) int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return len(h.subs[userID])
 }
 
 var errShuttingDown = httpx.NewError(http.StatusServiceUnavailable, "shutting_down", "The server is restarting. Try again in a moment.")

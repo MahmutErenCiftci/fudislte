@@ -27,10 +27,19 @@ const (
 	maxBatch        = 500
 	maxElementBytes = 256 << 10
 	maxElements     = 10000
+	// maxBoardBytes caps a board's stored JSON, deleted shapes included, which bounds
+	// what opening it loads into memory. The oldest deleted shapes make room first.
+	maxBoardBytes = 32 << 20
+	// maxNewVersion and maxVersionStep keep versions far from overflowing: editors bump a
+	// shape's version by one, so an outlandish version could otherwise make a shape that
+	// no later edit can replace.
+	maxNewVersion  = 1 << 31
+	maxVersionStep = 1 << 20
 )
 
 var (
 	errBoardFull = httpx.NewError(http.StatusConflict, "board_full", "A whiteboard can have at most 10000 shapes.")
+	errBoardSize = httpx.NewError(http.StatusConflict, "board_too_large", "This whiteboard is too large. Remove some shapes or start a new board.")
 	errElements  = httpx.Invalid(map[string]string{"elements": "Send at most 500 valid shapes at once."})
 	errClientID  = httpx.Invalid(map[string]string{"clientId": "The client ID is not valid."})
 	errTooFast   = httpx.NewError(http.StatusTooManyRequests, "rate_limited", "You are making changes too quickly. Wait a moment.")
@@ -73,7 +82,7 @@ func parseElements(raws []json.RawMessage) ([]element, error) {
 	for _, raw := range raws {
 		var h header
 		if len(raw) > maxElementBytes || len(raw) == 0 || raw[0] != '{' || json.Unmarshal(raw, &h) != nil ||
-			!elementID.MatchString(h.ID) || !slices.Contains(elementTypes, h.Type) || h.Version < 1 {
+			!elementID.MatchString(h.ID) || !slices.Contains(elementTypes, h.Type) || h.Version < 1 || h.Version > maxNewVersion+maxVersionStep*1024 {
 			return nil, errElements
 		}
 		e := element{h, raw}
@@ -167,6 +176,47 @@ func checkSize(ctx context.Context, tx pgx.Tx, boardID uuid.UUID, elements []ele
 	if count > maxElements {
 		return errBoardFull
 	}
+	return checkBytes(ctx, tx, boardID, elements)
+}
+
+// checkBytes keeps the board under maxBoardBytes. When the new shapes would not fit, the
+// oldest deleted shapes are dropped first (only clients offline for a long time could
+// miss those deletions); if that is not enough, the batch is refused.
+func checkBytes(ctx context.Context, tx pgx.Tx, boardID uuid.UUID, elements []element) error {
+	ids := make([]string, len(elements))
+	incoming := 0
+	for i, e := range elements {
+		ids[i] = e.ID
+		incoming += len(e.raw)
+	}
+	stored := func() (int, error) {
+		var n int
+		err := tx.QueryRow(ctx, `
+			SELECT coalesce(sum(size), 0) FROM board_elements WHERE board_id = $1 AND NOT (element_id = ANY ($2))`,
+			boardID, ids).Scan(&n)
+		return n, err
+	}
+	total, err := stored()
+	if err != nil {
+		return err
+	}
+	if over := total + incoming - maxBoardBytes; over > 0 {
+		if _, err := tx.Exec(ctx, `
+			DELETE FROM board_elements b USING (
+			  SELECT element_id, sum(size) OVER (ORDER BY updated_at, element_id) - size AS before
+			  FROM board_elements WHERE board_id = $1 AND deleted AND NOT (element_id = ANY ($2))
+			) old
+			WHERE b.board_id = $1 AND b.element_id = old.element_id AND old.before < $3`,
+			boardID, ids, over); err != nil {
+			return err
+		}
+		if total, err = stored(); err != nil {
+			return err
+		}
+		if total+incoming > maxBoardBytes {
+			return errBoardSize
+		}
+	}
 	return nil
 }
 
@@ -177,21 +227,26 @@ func upsert(ctx context.Context, tx pgx.Tx, boardID, userID uuid.UUID, elements 
 	nonces := make([]int64, len(elements))
 	data := make([]string, len(elements))
 	deleted := make([]bool, len(elements))
+	sizes := make([]int32, len(elements))
 	byID := make(map[string]json.RawMessage, len(elements))
 	for i, e := range elements {
 		ids[i], versions[i], nonces[i], data[i], deleted[i] = e.ID, e.Version, e.VersionNonce, string(e.raw), e.IsDeleted
+		sizes[i] = int32(len(e.raw))
 		byID[e.ID] = e.raw
 	}
 	rows, err := tx.Query(ctx, `
-		INSERT INTO board_elements (board_id, element_id, version, version_nonce, data, deleted, updated_by)
-		SELECT $1, n.id, n.version, n.nonce, n.data::jsonb, n.deleted, $2
-		FROM unnest($3::text[], $4::bigint[], $5::bigint[], $6::text[], $7::boolean[]) AS n(id, version, nonce, data, deleted)
+		INSERT INTO board_elements (board_id, element_id, version, version_nonce, data, deleted, updated_by, size)
+		SELECT $1, n.id, n.version, n.nonce, n.data::jsonb, n.deleted, $2, n.size
+		FROM unnest($3::text[], $4::bigint[], $5::bigint[], $6::text[], $7::boolean[], $8::integer[]) AS n(id, version, nonce, data, deleted, size)
+		WHERE n.version <= $9
+		   OR EXISTS (SELECT 1 FROM board_elements e WHERE e.board_id = $1 AND e.element_id = n.id)
 		ON CONFLICT (board_id, element_id) DO UPDATE
 		SET version = EXCLUDED.version, version_nonce = EXCLUDED.version_nonce, data = EXCLUDED.data,
-		    deleted = EXCLUDED.deleted, updated_by = EXCLUDED.updated_by, updated_at = now()
-		WHERE EXCLUDED.version > board_elements.version
-		   OR (EXCLUDED.version = board_elements.version AND EXCLUDED.version_nonce < board_elements.version_nonce)
-		RETURNING element_id`, boardID, userID, ids, versions, nonces, data, deleted)
+		    deleted = EXCLUDED.deleted, updated_by = EXCLUDED.updated_by, updated_at = now(), size = EXCLUDED.size
+		WHERE EXCLUDED.version - board_elements.version <= $10
+		  AND (EXCLUDED.version > board_elements.version
+		    OR (EXCLUDED.version = board_elements.version AND EXCLUDED.version_nonce < board_elements.version_nonce))
+		RETURNING element_id`, boardID, userID, ids, versions, nonces, data, deleted, sizes, int64(maxNewVersion), int64(maxVersionStep))
 	if err != nil {
 		return nil, err
 	}

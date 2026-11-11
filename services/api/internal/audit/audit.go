@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/netip"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 
@@ -98,11 +99,17 @@ func List(ctx context.Context, q database.Querier, orgID uuid.UUID, before int64
 	return entries, rows.Err()
 }
 
+// truncate cuts s to at most n bytes without splitting a UTF-8 character, which
+// PostgreSQL would reject.
 func truncate(s string, n int) string {
 	if len(s) <= n {
 		return s
 	}
-	return s[:n]
+	s = s[:n]
+	for len(s) > 0 && !utf8.ValidString(s) {
+		s = s[:len(s)-1]
+	}
+	return s
 }
 
 func deref(s *string) string {

@@ -37,6 +37,7 @@ const EN = {
   'nav.features': 'Features',
   'nav.security': 'Security',
   'nav.requirements': 'Requirements',
+  'nav.download': 'Download',
   'nav.install': 'Install',
   'nav.faq': 'FAQ',
   'nav.claude': 'Install with Claude',
@@ -129,7 +130,7 @@ const EN = {
   'ai.5': 'Starts the system and verifies HTTPS, the redirect and the app',
   'ai.6': 'Sets up daily, optionally encrypted backups and shows the first steps',
   'ai.note':
-    'It never weakens security, and your email password never enters the chat. You can also do every step by hand, as shown below.',
+    'It is written not to weaken security settings or take your email password into the chat. You can also do every step by hand, as shown below.',
   'inst.manual': 'Manual installation',
 
   'hero.badge': 'On your own server. Fully in your control.',
@@ -263,10 +264,6 @@ const EN = {
   'f.ops.4': 'Automatic database migrations at startup',
   'f.ops.5': 'A load-test tool and measured capacity',
 
-  'prev.badge': 'Preview',
-  'prev.title': 'Coming up: an AI assistant and developer features',
-  'prev.text':
-    'An optional <strong>AI worker</strong> (summaries that cite their sources, permission-aware search, transcription, agents that need approval) and a <strong>VS Code extension</strong> that shares an opt-in “coding” status are in the repository, but their integration with the API is still in progress. FUDISLTE works fully without them.',
 
   'sec.eyebrow': 'Security',
   'sec.title': 'Security is not bolted on — it is at the centre of the design',
@@ -296,7 +293,6 @@ const EN = {
   'arch.caddy': 'Automatic HTTPS, serves the web app, reverse proxy',
   'arch.api': 'Modular monolith: authorization, messages, rooms, projects, live events',
   'arch.livekit': 'Voice and video',
-  'arch.ai': 'Python · preview',
   'arch.optional': 'Optional, in the same Compose project',
   'arch.db': 'Internal network, no internet route',
   'arch.files': 'Files',
@@ -306,7 +302,7 @@ const EN = {
   'req.eyebrow': 'System requirements',
   'req.title': 'How much RAM, how much GPU?',
   'req.lead':
-    'Short answer: <strong>no GPU needed.</strong> Messaging, voice and video, projects and whiteboards run on the CPU. A GPU only helps if you want to run the optional AI model fast on your own server.',
+    'Short answer: <strong>no GPU needed.</strong> Messaging, voice and video, projects and whiteboards run on the CPU.',
   'req.th.profile': 'Profile',
   'req.th.users': 'People',
   'req.th.server': 'Server',
@@ -320,10 +316,6 @@ const EN = {
   'req.medium.s': '<strong>4–8 vCPU · 16 GB RAM</strong>; LiveKit on its own host, dedicated or managed PostgreSQL',
   'req.large': 'Large',
   'req.large.s': 'Several API replicas behind a load balancer, a LiveKit cluster',
-  'req.aiOnly': 'Only for AI',
-  'req.ai': 'AI <small>(optional, preview)</small>',
-  'req.ai.s': 'Runs on the CPU but slowly; <strong>+8 GB RAM</strong> for a 7B language model (estimate)',
-  'req.ai.g': 'Recommended: NVIDIA, ≥8 GB VRAM (estimate)',
   'req.f1.t': 'Measured memory use',
   'req.f1.d':
     'The idle core stack (Caddy + API + PostgreSQL) uses about <strong>60 MB of RAM</strong>. With 1,000 live users the API uses about <strong>100 MB of RAM</strong> and one CPU core; very heavy traffic (200 messages a second) takes it to four cores.',
@@ -353,27 +345,33 @@ const EN = {
   'inst.tab.voice': 'Voice and video',
   'inst.tab.backup': 'Backups',
   'inst.tab.upgrade': 'Upgrades',
-  'inst.tab.ai': 'AI',
   'inst.tab.local': 'Try it locally',
   'inst.voice.d':
     'Run LiveKit beside FUDISLTE. Generate the key and the secret, set <code>COMPOSE_PROFILES=media</code> and <code>FUDISLTE_LIVEKIT_URL=wss://&lt;your-domain&gt;/livekit</code> in <code>.env</code>, and open UDP 7882, TCP 7881 and UDP 3478 in the firewall.',
   'inst.backup.d':
-    'The scripts back up the database and the attachments together, verify the result and optionally encrypt it with <code>age</code>. A restore checks every table and file; the drill script rehearses a restore without touching the running deployment. Run them from the repository root.',
+    'The scripts back up the database and the attachments together, verify the result and encrypt it with <code>age</code>; the decryption key never stays on the server. A restore checks every table and file; the drill script rehearses a restore without touching the running deployment. Run them from the repository root.',
   'inst.upgrade.d':
     'Back up first and read the release notes. The API applies database migrations at startup, under a lock.',
-  'inst.ai.d':
-    'In preview. The worker publishes no port, runs on internal networks without an internet route and keeps its own vector database. Use Ollama in the same stack or a vLLM server on your network as the model server. First add <code>FUDISLTE_AI_SHARED_SECRET</code> and <code>FUDISLTE_AI_POSTGRES_PASSWORD</code> to <code>.env</code> (<code>openssl rand -hex 32</code> each).',
   'inst.local.d':
     'The same images run on a developer machine over plain HTTP; on Windows Docker Desktop is not needed, Docker Engine runs inside WSL. Open <code>http://localhost:8088</code>; sign-in codes are shown by a command instead of SMTP. Never expose this configuration to a network.',
   'inst.note':
     'Detailed guides: <a data-repo="/blob/main/docs/deployment/docker-compose.md" href="#install">Installing with Docker Compose</a> · <a data-repo="/blob/main/docs/deployment/backup-restore.md" href="#install">Backups and restore</a>. On networks without internet access you can use Caddy\'s internal certificate authority.',
 
+  'dl.eyebrow': 'Download',
+  'dl.title': 'Download the desktop app',
+  'dl.lead':
+    "Employees install the app, enter their organization's FUDISLTE address on first launch and sign in with a code sent to their work email. Anyone who prefers not to install it can open the same address in a browser.",
+  'dl.win': 'Windows 10 and 11 · 64-bit',
+  'dl.mac': 'Apple Silicon (M1 and later)',
+  'dl.linux': 'AppImage · x86_64',
+  'dl.button': 'Download',
+  'dl.note':
+    'All versions, release notes and SHA-256 checksums are on the <a data-repo="/releases/latest" href="#download">GitHub Releases</a> page.',
+
   'road.eyebrow': 'Status',
-  'road.title': 'Version 0.1.0 — early but usable',
+  'road.title': 'Version 0.1.0',
   'road.lead':
     'The first five phases of the roadmap are complete and closed with tests. While the version is 0.x, minor versions may change things; every change is written in the release notes.',
-  'road.callout':
-    "This version has not yet been verified on a public server with a real domain, Let's Encrypt and SMTP. Try it on a staging server before going live.",
   'road.link': 'Full roadmap →',
   'road.changelog': 'Changelog →',
   'road.p1': 'Foundation',
@@ -407,11 +405,9 @@ const EN = {
   'tree.web': 'React web app',
   'tree.desktop': 'Electron desktop app',
   'tree.api': 'Go API + PostgreSQL migrations',
-  'tree.ai': 'Optional AI worker (preview)',
   'tree.ui': 'Design tokens and components',
   'tree.client': 'Typed API client',
   'tree.platform': 'Web/desktop capability layer',
-  'tree.vscode': 'VS Code status extension (preview)',
   'tree.infra': 'Docker Compose deployment',
   'tree.docs': 'Architecture, decisions, security, deployment',
   'tree.ops': 'Backup, restore, load tests',
@@ -424,7 +420,7 @@ const EN = {
     'Yes, for your organization’s internal use: there are no fees per user, server or workspace, and your only cost is your own server. FUDISLTE is licensed under PolyForm Internal Use 1.0.0; distributing copies, selling it or hosting it for other organizations is not allowed.',
   'faq.q2': 'Do I need a GPU?',
   'faq.a2':
-    'No. Messaging, voice and video, projects and whiteboards run on the CPU. A GPU only helps when you want to run the optional AI model fast on your own server.',
+    'No. Messaging, voice and video, projects and whiteboards run on the CPU.',
   'faq.q3': 'Why is an SMTP server required?',
   'faq.a3':
     'FUDISLTE has no passwords: everyone signs in with a one-time code sent to their work email. Use your own mail server, the Microsoft 365 or Google Workspace relay, or an email provider.',
@@ -433,12 +429,10 @@ const EN = {
     'Yes. Add <code>tls internal</code> to the <code>Caddyfile</code>; Caddy then issues certificates from its own root. Distribute that root certificate to the clients (through group policy or MDM). The desktop app requires HTTPS and trusts the operating system certificate store.',
   'faq.q5': 'Where is my data stored?',
   'faq.a5':
-    "Only on your server: in the PostgreSQL database and the API's file volume. Even with the AI worker enabled the content stays on your server; model servers outside your network are refused unless you allow them.",
+    "Only on your server: in the PostgreSQL database and the API's file volume.",
   'faq.q6': 'Where do I download the desktop app?',
   'faq.a6':
-    'The Windows, macOS and Linux installers are built from the repository with <code>pnpm --filter @fudislte/desktop dist</code>. Organizations sign them with their own code-signing certificates; unsigned installers are for testing only.',
-  'faq.q7': 'Can I use it without AI?',
-  'faq.a7': 'Yes. AI is entirely optional and currently a preview; FUDISLTE works fully without it.',
+    "Download the Windows, macOS or Linux version from the <a href=\"#download\">download section</a>. On first launch, enter your organization's FUDISLTE address (for example <code>chat.yourcompany.com</code>) and sign in with your work email. Anyone who prefers not to install the app can open the same address in a browser.",
   'faq.q8': 'How can I contribute?',
   'faq.a8':
     'Open a pull request directly for bug fixes; open an issue first for new features. You agree to the Contributor License Agreement (CLA) on your first pull request. Details are in the contributing guide.',
@@ -452,11 +446,14 @@ const EN = {
   'footer.nav': 'Repository links',
   'footer.license': 'License',
   'footer.contrib': 'Contributing',
+  'footer.by': 'Developed by <a href="https://oponoya.com" rel="noopener">Oponoya</a> · <a href="https://oponoya.com" rel="noopener">oponoya.com</a>',
   'footer.security': 'Security',
+  'footer.privacy': 'Privacy',
+  'footer.terms': 'Terms of use',
   'footer.changelog': 'Changelog',
   'footer.docs': 'Documentation',
   'footer.tm':
-    'Discord, Slack and Microsoft Teams are trademarks of their respective owners; FUDISLTE is not affiliated with these companies.',
+    'Discord, Slack and Microsoft Teams are trademarks of their respective owners, and Claude is a trademark of Anthropic; FUDISLTE is not affiliated with these companies.',
 }
 
 const LANG_KEY = 'fudislte.site.lang'

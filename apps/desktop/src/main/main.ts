@@ -5,7 +5,6 @@
 // lives on the server and in the shared web app.
 
 import { app, BrowserWindow, desktopCapturer, type IpcMainInvokeEvent, ipcMain, Menu, net, protocol, session, shell } from 'electron'
-import { randomUUID } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 
@@ -27,12 +26,13 @@ app.enableSandbox()
 const isDev = !app.isPackaged
 // The smoke test runs beside a developer's open window: give it its own profile so the
 // single-instance lock and the stored server address do not collide.
-if (isDev && process.env.FUDISLTE_SMOKE_TEST === '1') {
+if (isDev && process.env.FUDISLTE_SMOKE_TEST) {
   app.setPath('userData', path.join(app.getPath('temp'), 'fudislte-desktop-smoke'))
 }
 const allowInsecureLocalhost = isDev || process.env.FUDISLTE_ALLOW_INSECURE_LOCALHOST === '1'
 const rendererDir = path.join(__dirname, 'renderer')
 const connectPage = `${APP_ORIGIN}/connect.html`
+const pickerPage = `${APP_ORIGIN}/picker.html`
 
 /** Development override, e.g. http://localhost:5173 (the Vite dev server). */
 const devServer = isDev && process.env.FUDISLTE_DEV_SERVER_URL ? normalizeServerUrl(process.env.FUDISLTE_DEV_SERVER_URL, { allowInsecureLocalhost }) : null
@@ -102,24 +102,15 @@ function configureSession() {
   ses.setPermissionCheckHandler((_wc, permission, requestingOrigin) =>
     isPermissionAllowed(permission, requestingOrigin, serverOrigin),
   )
-  // Screen sharing: the page shows the screens and windows, the person picks one.
+  // Screen sharing: the app's own picker window shows the screens and windows and the
+  // person picks one, like a browser's picker. The server's page only receives the stream
+  // that was picked; it never sees the other windows, their titles or thumbnails, and it
+  // cannot pick for the person.
   ses.setDisplayMediaRequestHandler(async (request, callback) => {
-    const frame = request.frame
-    if (!frame || originOf(request.securityOrigin) !== serverOrigin) return callback({})
+    if (!request.frame || originOf(request.securityOrigin) !== serverOrigin || !mainWindow || activePick) return callback({})
     try {
       const sources = await desktopCapturer.getSources({ types: ['screen', 'window'], thumbnailSize: { width: 320, height: 180 } })
-      const id = randomUUID()
-      const timer = setTimeout(() => finishPick(id, null), 120_000)
-      pendingPicks.set(id, { sources, callback, timer })
-      frame.send('fudislte:display:pick', {
-        id,
-        sources: sources.map((s) => ({
-          id: s.id,
-          name: s.name,
-          kind: s.id.startsWith('screen:') ? 'screen' : 'window',
-          thumbnail: s.thumbnail.toDataURL(),
-        })),
-      })
+      openPicker(mainWindow, sources, callback)
     } catch {
       callback({})
     }
@@ -129,22 +120,63 @@ function configureSession() {
   })
 }
 
-interface PendingPick {
+interface ActivePick {
   sources: Electron.DesktopCapturerSource[]
   callback: (streams: Electron.Streams) => void
+  window: BrowserWindow
   timer: ReturnType<typeof setTimeout>
 }
-const pendingPicks = new Map<string, PendingPick>()
+let activePick: ActivePick | null = null
 
-/** Answers a screen-share request: the chosen source, or nothing to cancel. */
-function finishPick(id: string, sourceId: string | null) {
-  const pick = pendingPicks.get(id)
+function openPicker(parent: BrowserWindow, sources: Electron.DesktopCapturerSource[], callback: ActivePick['callback']) {
+  const window = new BrowserWindow({
+    parent,
+    modal: true,
+    width: 760,
+    height: 560,
+    minWidth: 480,
+    minHeight: 360,
+    show: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    title: 'FUDISLTE',
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      sandbox: true,
+      nodeIntegration: false,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      webviewTag: false,
+      spellcheck: false,
+    },
+  })
+  window.setMenu(null)
+  const timer = setTimeout(() => finishPick(null), 120_000)
+  activePick = { sources, callback, window, timer }
+  window.once('ready-to-show', () => window.show())
+  window.on('closed', () => finishPick(null))
+  void window.loadURL(pickerPage)
+}
+
+/** Answers the screen-share request with the chosen source, or nothing to cancel. */
+function finishPick(sourceId: string | null) {
+  const pick = activePick
   if (!pick) return
-  pendingPicks.delete(id)
+  activePick = null
   clearTimeout(pick.timer)
   const source = pick.sources.find((s) => s.id === sourceId)
   // System audio comes with whole screens on Windows only.
   pick.callback(source ? { video: source, audio: process.platform === 'win32' && source.id.startsWith('screen:') ? 'loopback' : undefined } : {})
+  if (!pick.window.isDestroyed()) pick.window.close()
+}
+
+/** True only for the picker page in the picker window that is open right now. */
+function fromPicker(event: IpcMainInvokeEvent) {
+  return activePick !== null && event.sender === activePick.window.webContents && callerOrigin(event) === APP_ORIGIN &&
+    event.senderFrame?.url.startsWith(pickerPage) === true
 }
 
 function openExternal(url: string) {
@@ -184,7 +216,9 @@ function createWindow() {
       webSecurity: true,
       allowRunningInsecureContent: false,
       webviewTag: false,
-      spellcheck: true,
+      // Windows and macOS use the system spellchecker; on Linux Chromium would download
+      // dictionaries from Google, and the app only talks to the organization's server.
+      spellcheck: process.platform !== 'linux',
       additionalArguments: [`--fudislte-version=${app.getVersion()}`],
     },
   })
@@ -193,6 +227,7 @@ function createWindow() {
     mainWindow = null
   })
   if (isDev && process.env.FUDISLTE_SMOKE_TEST === '1') runSmokeTest(mainWindow)
+  if (isDev && process.env.FUDISLTE_SMOKE_TEST === 'picker') runPickerSmokeTest(mainWindow)
   void mainWindow.loadURL(serverOrigin ?? connectPage)
 }
 
@@ -257,10 +292,28 @@ function registerIpc() {
     if (!fromServer(event)) throw new Error('forbidden')
     showConnectPage()
   })
-  ipcMain.handle('fudislte:display:choose', (event, id: unknown, sourceId: unknown) => {
+  // Pages from servers built for older shells may still call this; the app's own picker
+  // answers screen-share requests now, so it does nothing.
+  ipcMain.handle('fudislte:display:choose', (event) => {
     if (!fromServer(event)) throw new Error('forbidden')
-    if (typeof id !== 'string' || (sourceId !== null && typeof sourceId !== 'string')) throw new Error('invalid')
-    finishPick(id, sourceId)
+  })
+  ipcMain.handle('fudislte:picker:request', (event) => {
+    if (!fromPicker(event) || !activePick) throw new Error('forbidden')
+    return {
+      server: serverOrigin ? new URL(serverOrigin).host : '',
+      lang: app.getLocale().toLowerCase().startsWith('tr') ? 'tr' : 'en',
+      sources: activePick.sources.map((s) => ({
+        id: s.id,
+        name: s.name,
+        kind: s.id.startsWith('screen:') ? 'screen' : 'window',
+        thumbnail: s.thumbnail.toDataURL(),
+      })),
+    }
+  })
+  ipcMain.handle('fudislte:picker:choose', (event, sourceId: unknown) => {
+    if (!fromPicker(event)) throw new Error('forbidden')
+    if (sourceId !== null && typeof sourceId !== 'string') throw new Error('invalid')
+    finishPick(sourceId)
   })
   ipcMain.handle('fudislte:shell:open-external', (event, url: unknown) => {
     if (!fromServer(event) && !fromConnectPage(event)) throw new Error('forbidden')
@@ -315,5 +368,28 @@ function runSmokeTest(win: BrowserWindow) {
     const blockedNavigation = !isAllowedNavigation('https://evil.example/', serverOrigin)
     console.log(`FUDISLTE_SMOKE ${JSON.stringify({ ...result, serverUrl, blockedNavigation })}`)
     app.exit(result.nodeRequire === 'undefined' && result.nodeProcess === 'undefined' ? 0 : 1)
+  })
+}
+
+/**
+ * Development-only check used by `pnpm --filter @fudislte/desktop picker`: opens the
+ * screen-share picker on real sources, picks the first source
+ * the way a person would and prints what the request was answered with.
+ */
+function runPickerSmokeTest(win: BrowserWindow) {
+  win.webContents.once('did-finish-load', async () => {
+    const sources = await desktopCapturer.getSources({ types: ['screen', 'window'], thumbnailSize: { width: 320, height: 180 } })
+    openPicker(win, sources, (streams) => {
+      console.log(`FUDISLTE_PICKER_SMOKE ${JSON.stringify({ sources: sources.length, chosen: streams.video && "id" in streams.video ? streams.video.id : null, audio: streams.audio ?? null })}`)
+      setTimeout(() => app.exit(streams.video ? 0 : 1), 200)
+    })
+    const picker = activePick?.window
+    picker?.webContents.once('did-finish-load', () => {
+      setTimeout(async () => {
+        const lead = await picker.webContents.executeJavaScript('document.getElementById("lead").textContent')
+        console.log(`FUDISLTE_PICKER_LEAD ${JSON.stringify(lead)}`)
+        await picker.webContents.executeJavaScript('document.querySelector(".source").click(); document.getElementById("share").click()')
+      }, 1500)
+    })
   })
 }

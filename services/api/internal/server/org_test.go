@@ -389,3 +389,27 @@ func TestDisableAccount(t *testing.T) {
 		t.Fatalf("audit log lacks disable events: %v", actions)
 	}
 }
+
+// A lower rank is not enough to assign a role: it must not grant permissions the person
+// assigning it lacks, or a team leader could invite a second account of their own into a
+// custom role that moderates messages.
+func TestAssignableRolesGrantNothingNew(t *testing.T) {
+	ts := newServer(t)
+	owner, orgID := ts.setupInstance()
+	roles := owner.roles(orgID)
+	var moderator struct {
+		Role struct {
+			ID string `json:"id"`
+		} `json:"role"`
+	}
+	owner.must(http.StatusCreated, http.MethodPost, "/api/v1/orgs/"+orgID+"/roles",
+		map[string]any{"name": "Moderator", "position": 40, "permissions": []string{"messages.manage"}}).decode(t, &moderator)
+	lead, _ := ts.join(owner, orgID, "lead@example.com", "team-leader")
+	invitations := "/api/v1/orgs/" + orgID + "/invitations"
+	expectError(t, lead.do(http.MethodPost, invitations, map[string]string{"email": "alt@example.com", "roleId": moderator.Role.ID}),
+		http.StatusForbidden, "forbidden")
+	// Roles that grant nothing new still work.
+	lead.must(http.StatusCreated, http.MethodPost, invitations, map[string]string{"email": "new@example.com", "roleId": roles["employee"].ID})
+	// Administrators hold every permission and may assign the custom role.
+	owner.must(http.StatusCreated, http.MethodPost, invitations, map[string]string{"email": "mod@example.com", "roleId": moderator.Role.ID})
+}

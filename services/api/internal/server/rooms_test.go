@@ -255,3 +255,40 @@ func TestOpenRoomsAndSecurityChanges(t *testing.T) {
 		t.Fatal("still admitted after leaving")
 	}
 }
+
+// Managing a room is not a way into it, and creating one is no back door after the
+// creator's role changes (threat model E4, ADR-0010).
+func TestRoomManagersAndFormerCreatorsStayOut(t *testing.T) {
+	ts := newServer(t)
+	owner, orgID := ts.setupInstance()
+	roles := owner.roles(orgID)
+	lead, leadID := ts.join(owner, orgID, "lead@example.com", "team-leader")
+	_, empID := ts.join(owner, orgID, "emp@example.com", "employee")
+	sec, secID := ts.join(owner, orgID, "sec@example.com", "security-administrator")
+	base := "/api/v1/orgs/" + orgID
+	const secret = "Çok gizli 2026"
+
+	hr := lead.createRoom(orgID, map[string]any{"name": "İK", "access": "restricted", "password": secret, "memberIds": []string{empID}})
+	lead.post(orgID, hr.ID, "Maaş tablosu burada.")
+
+	// A room manager edits the list but cannot put themselves on it.
+	expectError(t, sec.do(http.MethodPut, base+"/rooms/"+hr.ID+"/access", map[string]any{"userIds": []string{empID, secID}}),
+		http.StatusForbidden, "room_self_access")
+	sec.must(http.StatusOK, http.MethodPut, base+"/rooms/"+hr.ID+"/access", map[string]any{"userIds": []string{empID}})
+	expectError(t, sec.enterRoom(orgID, hr.ID, secret), http.StatusForbidden, "room_not_allowed")
+
+	// The creator loses the room with the role: no password-free entry, no history, no
+	// management.
+	owner.must(http.StatusOK, http.MethodPatch, base+"/members/"+leadID, map[string]string{"roleId": roles["guest"].ID})
+	expectError(t, lead.do(http.MethodGet, base+"/channels/"+hr.ID+"/messages", nil), http.StatusNotFound, "not_found")
+	expectError(t, lead.enterRoom(orgID, hr.ID, ""), http.StatusNotFound, "not_found")
+	expectError(t, lead.do(http.MethodPut, base+"/rooms/"+hr.ID+"/access", map[string]any{"userIds": []string{empID}}),
+		http.StatusNotFound, "not_found")
+
+	// Promoted back, they are an ordinary member again: removed and invited back, the
+	// creator's rights are gone for good.
+	owner.must(http.StatusNoContent, http.MethodDelete, base+"/members/"+leadID, nil)
+	token := owner.invite(orgID, "lead@example.com", roles["team-leader"].ID)
+	lead.must(http.StatusOK, http.MethodPost, "/api/v1/invitations/"+token+"/accept", map[string]string{})
+	expectError(t, lead.enterRoom(orgID, hr.ID, ""), http.StatusNotFound, "not_found")
+}

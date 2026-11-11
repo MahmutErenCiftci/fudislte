@@ -66,7 +66,10 @@ done
 [[ "$project" =~ ^[a-z0-9][a-z0-9_-]*$ ]] || die "invalid project name"
 case "$project" in fudislte | fudislte-local | fudislte-drill) die "refusing to use $project for the fixture" ;; esac
 
-state="/tmp/$project"
+# Per user, not in /tmp, where another user could create the directory first.
+state_root="${XDG_RUNTIME_DIR:-$HOME/.cache}/fudislte"
+mkdir -p "$state_root" && chmod 700 "$state_root"
+state="$state_root/$project"
 compose_dir="$repo/infrastructure/docker"
 files=("$compose_dir/compose.yml" "$here/compose.drill.yml")
 compose_cmd F "$compose_dir" "$project" "$state/drill.env" "${files[@]}"

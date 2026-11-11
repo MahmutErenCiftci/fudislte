@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FUDISLTE — Kendi sunucunuzda ekip iş birliği</title>
-  <meta name="description" content="FUDISLTE; mesajlaşma, sesli ve görüntülü odalar, toplantılar, projeler ve beyaz tahtaları kendi sunucunuzda toplayan, kaynak kodu açık bir iş birliği platformudur. Discord, Slack ve Microsoft Teams'e kendi sunucunuzda çalışan alternatif.">
+  <meta name="description" content="FUDISLTE; mesajlaşma, sesli ve görüntülü odalar, toplantılar, projeler ve beyaz tahtaları kendi sunucunuzda toplayan, kaynak kodu incelenebilir bir iş birliği platformudur. Discord, Slack ve Microsoft Teams'e kendi sunucunuzda çalışan alternatif.">
   <meta name="theme-color" content="#155dfc">
   <meta property="og:type" content="website">
   <meta property="og:title" content="FUDISLTE — kendi sunucunuzda ekip iş birliği">
@@ -67,6 +67,7 @@
         <a href="#features" data-i18n="nav.features">Özellikler</a>
         <a href="#security" data-i18n="nav.security">Güvenlik</a>
         <a href="#requirements" data-i18n="nav.requirements">Gereksinimler</a>
+        <a href="#download" data-i18n="nav.download">İndir</a>
         <a href="#install" data-i18n="nav.install">Kurulum</a>
         <a href="#claude-install" data-i18n="nav.claude">Claude ile kur</a>
         <a href="#tour" data-i18n="nav.tour">Adım adım</a>
@@ -105,7 +106,7 @@
             <span data-i18n="hero.title1">Ekip çalışmanız için</span>
             <span class="accent" data-i18n="hero.title2">güvenli ve size ait bir alan.</span>
           </h1>
-          <p class="lead" data-i18n="hero.lead">FUDISLTE; mesajlaşmayı, sesli ve görüntülü odaları, toplantıları, projeleri ve beyaz tahtaları tek bir yerde toplayan, <strong>kendi sunucunuzda çalışan</strong>, kaynak kodu açık bir iş birliği platformudur. Discord, Slack ve Microsoft Teams'e alternatif: satıcı bulutu yok, kullanıcı başı ücret yok, verileriniz sizde kalır.</p>
+          <p class="lead" data-i18n="hero.lead">FUDISLTE; mesajlaşmayı, sesli ve görüntülü odaları, toplantıları, projeleri ve beyaz tahtaları tek bir yerde toplayan, <strong>kendi sunucunuzda çalışan</strong>, kaynak kodu incelenebilir bir iş birliği platformudur. Discord, Slack ve Microsoft Teams'e alternatif: satıcı bulutu yok, kullanıcı başı ücret yok, verileriniz sizde kalır.</p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-lg" href="#install">
               <span data-i18n="hero.ctaInstall">Kurulumu başlat</span>
@@ -117,7 +118,7 @@
             </a>
           </div>
           <ul class="checks">
-            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="hero.check1">Kurumunuz için ücretsiz · kaynak kodu açık</span></li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="hero.check1">Kurumunuz için ücretsiz · kaynak kodu incelenebilir</span></li>
             <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="hero.check2">Kendi sunucunuzda çalışır</span></li>
             <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="hero.check3">GPU gerekmez</span></li>
           </ul>
@@ -374,12 +375,6 @@
           </article>
         </div>
 
-        <div class="preview-box">
-          <span class="badge badge-warn" data-i18n="prev.badge">Önizleme</span>
-          <div>
-            <h3 data-i18n="prev.title">Yolda: yapay zekâ asistanı ve geliştirici özellikleri</h3>
-            <p data-i18n="prev.text">İsteğe bağlı <strong>AI worker</strong> (kaynak gösteren özetler, izinlere saygılı arama, transkripsiyon, onay gerektiren ajanlar) ve opt-in “kodluyor” durumu paylaşan <strong>VS Code eklentisi</strong> depoda hazır, ancak API ile entegrasyonları sürüyor. FUDISLTE bunlar olmadan eksiksiz çalışır.</p>
-          </div>
         </div>
       </div>
     </section>
@@ -435,11 +430,10 @@
           <p class="arch-divider" data-i18n="arch.optional">İsteğe bağlı, aynı Compose projesinde</p>
           <div class="arch-row">
             <div class="arch-node optional"><svg class="icon" aria-hidden="true"><use href="#i-mic"/></svg><strong>LiveKit</strong><small data-i18n="arch.livekit">Ses ve görüntü</small></div>
-            <div class="arch-node optional"><svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg><strong>AI worker</strong><small data-i18n="arch.ai">Python · önizleme</small></div>
           </div>
         </div>
         <ul class="chips" aria-label="Teknolojiler" data-i18n-attr="aria-label:arch.stack">
-          <li>Go</li><li>PostgreSQL 17</li><li>React</li><li>TypeScript</li><li>Electron</li><li>LiveKit</li><li>Excalidraw</li><li>Caddy</li><li>Docker Compose</li><li>Python · FastAPI</li>
+          <li>Go</li><li>PostgreSQL 17</li><li>React</li><li>TypeScript</li><li>Electron</li><li>LiveKit</li><li>Excalidraw</li><li>Caddy</li><li>Docker Compose</li>
         </ul>
       </div>
     </section>
@@ -450,7 +444,7 @@
         <header class="section-head">
           <p class="eyebrow" data-i18n="req.eyebrow">Sistem gereksinimleri</p>
           <h2 id="req-title" data-i18n="req.title">Ne kadar RAM, ne kadar GPU?</h2>
-          <p data-i18n="req.lead">Kısa cevap: <strong>GPU gerekmez.</strong> Mesajlaşma, ses ve görüntü, projeler ve beyaz tahta CPU ile çalışır. GPU yalnızca isteğe bağlı yapay zekâ modelini kendi sunucunuzda hızlı çalıştırmak için faydalıdır.</p>
+          <p data-i18n="req.lead">Kısa cevap: <strong>GPU gerekmez.</strong> Mesajlaşma, ses ve görüntü, projeler ve beyaz tahta CPU ile çalışır.</p>
         </header>
 
         <div class="table-wrap">
@@ -486,13 +480,7 @@
                 <th scope="row" data-i18n="req.large">Büyük</th>
                 <td data-label="Kişi" data-i18n-attr="data-label:req.th.users">500+</td>
                 <td data-label="Sunucu" data-i18n-attr="data-label:req.th.server" data-i18n="req.large.s">Yük dengeleyici arkasında birden fazla API, LiveKit kümesi</td>
-                <td data-label="GPU"><span class="badge" data-i18n="req.aiOnly">Yalnızca AI için</span></td>
-              </tr>
-              <tr class="row-optional">
-                <th scope="row" data-i18n="req.ai">Yapay zekâ <small>(isteğe bağlı, önizleme)</small></th>
-                <td class="cell-empty" data-label="Kişi" data-i18n-attr="data-label:req.th.users">—</td>
-                <td data-label="Sunucu" data-i18n-attr="data-label:req.th.server" data-i18n="req.ai.s">CPU ile çalışır ama yavaştır; 7B bir dil modeli için <strong>+8 GB RAM</strong> (tahmini)</td>
-                <td data-label="GPU"><span class="badge badge-warn" data-i18n="req.ai.g">Önerilir: NVIDIA, ≥8 GB VRAM (tahmini)</span></td>
+                <td data-label="GPU"><span class="badge badge-ok" data-i18n="req.none">Gerekmez</span></td>
               </tr>
             </tbody>
           </table>
@@ -515,6 +503,38 @@
             <p data-i18n="req.f3.d">Çekirdek container imajları yaklaşık <strong>0,6 GB</strong>; üstüne veritabanı ve ekler. Açık portlar: TCP 80/443 (UDP 443 isteğe bağlı). Ses ve görüntü için ayrıca UDP 7882, TCP 7881 ve UDP 3478.</p>
           </article>
         </div>
+      </div>
+    </section>
+
+    <!-- Download -->
+    <section class="section" id="download" aria-labelledby="download-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow" data-i18n="dl.eyebrow">İndir</p>
+          <h2 id="download-title" data-i18n="dl.title">Masaüstü uygulamasını indirin</h2>
+          <p data-i18n="dl.lead">Çalışanlar uygulamayı kurar, ilk açılışta şirketlerinin FUDISLTE adresini girer ve iş e-postalarına gelen kodla giriş yapar. Uygulama kurmak istemeyenler aynı adresi tarayıcıda açabilir.</p>
+        </header>
+        <div class="card-grid three downloads">
+          <a class="card download-card" data-repo="/releases/latest/download/FUDISLTE-Setup.exe" href="#download">
+            <svg class="icon icon-lg" aria-hidden="true"><use href="#i-monitor"/></svg>
+            <h3>Windows</h3>
+            <p data-i18n="dl.win">Windows 10 ve 11 · 64 bit</p>
+            <span class="btn btn-primary btn-sm"><span data-i18n="dl.button">İndir</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a class="card download-card" data-repo="/releases/latest/download/FUDISLTE-arm64.dmg" href="#download">
+            <svg class="icon icon-lg" aria-hidden="true"><use href="#i-monitor"/></svg>
+            <h3>macOS</h3>
+            <p data-i18n="dl.mac">Apple Silicon (M1 ve sonrası)</p>
+            <span class="btn btn-primary btn-sm"><span data-i18n="dl.button">İndir</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a class="card download-card" data-repo="/releases/latest/download/FUDISLTE-x86_64.AppImage" href="#download">
+            <svg class="icon icon-lg" aria-hidden="true"><use href="#i-monitor"/></svg>
+            <h3>Linux</h3>
+            <p data-i18n="dl.linux">AppImage · x86_64</p>
+            <span class="btn btn-primary btn-sm"><span data-i18n="dl.button">İndir</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </a>
+        </div>
+        <p class="note" data-i18n="dl.note">Tüm sürümler, sürüm notları ve SHA-256 sağlama toplamları <a data-repo="/releases/latest" href="#download">GitHub Releases</a> sayfasında.</p>
       </div>
     </section>
 
@@ -557,7 +577,7 @@ claude "<span data-i18n="ai.prompt">FUDISLTE'yi bu sunucuya kur</span>"</code></
               <li data-i18n="ai.5">Sistemi başlatır; HTTPS'i, yönlendirmeyi ve uygulamayı doğrular</li>
               <li data-i18n="ai.6">Günlük, istenirse şifreli yedeklemeyi kurar ve ilk adımları gösterir</li>
             </ul>
-            <p class="ai-install-note" data-i18n="ai.note">Güvenliği hiçbir zaman gevşetmez; e-posta şifreniz sohbete girmez. Adımların hepsini aşağıdaki gibi elle de yapabilirsiniz.</p>
+            <p class="ai-install-note" data-i18n="ai.note">Güvenlik ayarlarını gevşetmeyecek ve e-posta şifrenizi sohbete almayacak şekilde yazılmıştır. Adımların hepsini aşağıdaki gibi elle de yapabilirsiniz.</p>
           </div>
         </div>
 
@@ -616,7 +636,6 @@ docker compose logs api | grep setup_token</code></pre>
             <button type="button" role="tab" id="tab-voice" aria-controls="panel-voice" aria-selected="true" data-i18n="inst.tab.voice">Ses ve görüntü</button>
             <button type="button" role="tab" id="tab-backup" aria-controls="panel-backup" aria-selected="false" tabindex="-1" data-i18n="inst.tab.backup">Yedekleme</button>
             <button type="button" role="tab" id="tab-upgrade" aria-controls="panel-upgrade" aria-selected="false" tabindex="-1" data-i18n="inst.tab.upgrade">Güncelleme</button>
-            <button type="button" role="tab" id="tab-ai" aria-controls="panel-ai" aria-selected="false" tabindex="-1" data-i18n="inst.tab.ai">Yapay zekâ</button>
             <button type="button" role="tab" id="tab-local" aria-controls="panel-local" aria-selected="false" tabindex="-1" data-i18n="inst.tab.local">Yerelde dene</button>
           </div>
           <div class="tab-panel" role="tabpanel" id="panel-voice" aria-labelledby="tab-voice">
@@ -631,10 +650,10 @@ docker compose up -d</code></pre>
             </div>
           </div>
           <div class="tab-panel" role="tabpanel" id="panel-backup" aria-labelledby="tab-backup" hidden>
-            <p data-i18n="inst.backup.d">Scriptler veritabanını ve ekleri birlikte yedekler, sonucu doğrular ve isteğe bağlı olarak <code>age</code> ile şifreler. Geri yükleme her tabloyu ve dosyayı kontrol eder; tatbikat scripti çalışan sisteme dokunmadan geri yüklemeyi prova eder. Depo kökünden çalıştırın.</p>
+            <p data-i18n="inst.backup.d">Scriptler veritabanını ve ekleri birlikte yedekler, sonucu doğrular ve <code>age</code> ile şifreler; şifre çözme anahtarı sunucuda durmaz. Geri yükleme her tabloyu ve dosyayı kontrol eder; tatbikat scripti çalışan sisteme dokunmadan geri yüklemeyi prova eder. Depo kökünden çalıştırın.</p>
             <div class="code-block">
               <div class="code-head"><span>bash</span><button type="button" class="copy-btn">Kopyala</button></div>
-              <pre><code>scripts/ops/backup.sh -p fudislte -o /var/backups/fudislte
+              <pre><code>scripts/ops/backup.sh -p fudislte -o /var/backups/fudislte -r age1…
 scripts/ops/restore.sh -p fudislte -i /var/backups/fudislte/&lt;backup&gt;
 scripts/ops/restore-drill.sh</code></pre>
             </div>
@@ -648,12 +667,6 @@ git pull
 docker compose up -d --build</code></pre>
             </div>
           </div>
-          <div class="tab-panel" role="tabpanel" id="panel-ai" aria-labelledby="tab-ai" hidden>
-            <p data-i18n="inst.ai.d">Önizleme aşamasında. Worker hiçbir port açmaz, internet erişimi olmayan iç ağlarda çalışır ve kendi vektör veritabanını tutar. Model sunucusu olarak aynı yığında Ollama'yı veya ağınızdaki bir vLLM sunucusunu kullanın. Önce <code>.env</code> dosyasına <code>FUDISLTE_AI_SHARED_SECRET</code> ve <code>FUDISLTE_AI_POSTGRES_PASSWORD</code> ekleyin (her biri <code>openssl rand -hex 32</code>).</p>
-            <div class="code-block">
-              <div class="code-head"><span>bash</span><button type="button" class="copy-btn">Kopyala</button></div>
-              <pre><code>docker compose -f compose.yml -f compose.ai.yml --profile ollama up -d --build</code></pre>
-            </div>
           </div>
           <div class="tab-panel" role="tabpanel" id="panel-local" aria-labelledby="tab-local" hidden>
             <p data-i18n="inst.local.d">Aynı imajlar geliştirici makinesinde düz HTTP ile çalışır; Windows'ta Docker Desktop gerekmez, Docker Engine WSL içinde çalışır. <code>http://localhost:8088</code> adresini açın; giriş kodları SMTP yerine komutla gösterilir. Bu yapılandırmayı asla ağa açmayın.</p>
@@ -890,9 +903,8 @@ wsl -d Ubuntu-24.04 -- bash scripts/wsl/docker-local.sh codes</code></pre>
       <div class="container split">
         <header class="section-head left">
           <p class="eyebrow" data-i18n="road.eyebrow">Durum</p>
-          <h2 id="roadmap-title" data-i18n="road.title">Sürüm 0.1.0 — erken ama kullanılabilir</h2>
+          <h2 id="roadmap-title" data-i18n="road.title">Sürüm 0.1.0</h2>
           <p data-i18n="road.lead">Yol haritasının ilk beş aşaması tamamlandı ve testlerle kapatıldı. Sürüm 0.x olduğu için küçük sürümler arasında değişiklikler olabilir; her değişiklik sürüm notlarında yazılır.</p>
-          <p class="callout" data-i18n="road.callout">Bu sürüm henüz gerçek alan adı, Let's Encrypt ve SMTP ile herkese açık bir sunucuda doğrulanmadı. Canlıya almadan önce bir test sunucusunda deneyin.</p>
           <p class="links-row">
             <a data-repo="/blob/main/docs/roadmap.md" href="#roadmap" data-i18n="road.link">Tüm yol haritası →</a>
             <a data-repo="/blob/main/CHANGELOG.md" href="#roadmap" data-i18n="road.changelog">Değişiklik günlüğü →</a>
@@ -917,7 +929,7 @@ wsl -d Ubuntu-24.04 -- bash scripts/wsl/docker-local.sh codes</code></pre>
       <div class="container split">
         <header class="section-head left">
           <p class="eyebrow" data-i18n="repo.eyebrow">Depo</p>
-          <h2 id="repo-title" data-i18n="repo.title">Kaynak kodu açık, katkıya açık</h2>
+          <h2 id="repo-title" data-i18n="repo.title">Kaynak kodu incelenebilir, katkıya açık</h2>
           <p data-i18n="repo.lead">Tek bir monorepo: Go API, React web uygulaması, Electron masaüstü uygulaması, Docker Compose dosyaları ve belgeler. Her push ve pull request CI'da derlenir, test edilir ve lisans uyumu (REUSE) kontrol edilir.</p>
           <ul class="ticks compact">
             <li data-i18n="repo.l1">Mimari kararlar ADR olarak belgelenmiş</li>
@@ -934,11 +946,9 @@ wsl -d Ubuntu-24.04 -- bash scripts/wsl/docker-local.sh codes</code></pre>
           <pre><code>apps/web             <u data-i18n="tree.web">React web uygulaması</u>
 apps/desktop         <u data-i18n="tree.desktop">Electron masaüstü uygulaması</u>
 services/api         <u data-i18n="tree.api">Go API + PostgreSQL migrasyonları</u>
-services/ai          <u data-i18n="tree.ai">İsteğe bağlı AI worker (önizleme)</u>
 packages/ui          <u data-i18n="tree.ui">Tasarım token'ları ve bileşenler</u>
 packages/api-client  <u data-i18n="tree.client">Tipli API istemcisi</u>
 packages/platform    <u data-i18n="tree.platform">Web/masaüstü yetenek katmanı</u>
-extensions/vscode    <u data-i18n="tree.vscode">VS Code durum eklentisi (önizleme)</u>
 infrastructure/      <u data-i18n="tree.infra">Docker Compose dağıtımı</u>
 docs/                <u data-i18n="tree.docs">Mimari, kararlar, güvenlik, kurulum</u>
 scripts/ops          <u data-i18n="tree.ops">Yedekleme, geri yükleme, yük testi</u>
@@ -961,7 +971,7 @@ tools/loadtest       <u data-i18n="tree.loadtest">Yük üreteci (Go)</u></code><
           </details>
           <details>
             <summary data-i18n="faq.q2">GPU gerekiyor mu?</summary>
-            <p data-i18n="faq.a2">Hayır. Mesajlaşma, ses ve görüntü, projeler ve beyaz tahta CPU ile çalışır. GPU yalnızca isteğe bağlı yapay zekâ modelini kendi sunucunuzda hızlı çalıştırmak istediğinizde faydalıdır.</p>
+            <p data-i18n="faq.a2">Hayır. Mesajlaşma, ses ve görüntü, projeler ve beyaz tahta CPU ile çalışır.</p>
           </details>
           <details>
             <summary data-i18n="faq.q3">Neden SMTP sunucusu gerekiyor?</summary>
@@ -973,15 +983,11 @@ tools/loadtest       <u data-i18n="tree.loadtest">Yük üreteci (Go)</u></code><
           </details>
           <details>
             <summary data-i18n="faq.q5">Verilerim nerede tutuluyor?</summary>
-            <p data-i18n="faq.a5">Yalnızca sizin sunucunuzda: PostgreSQL veritabanında ve API'nin dosya volume'ünde. Yapay zekâ worker'ını açsanız bile içerik sunucunuzda kalır; ağınızın dışındaki model sunucuları siz izin vermedikçe reddedilir.</p>
+            <p data-i18n="faq.a5">Yalnızca sizin sunucunuzda: PostgreSQL veritabanında ve API'nin dosya volume'ünde.</p>
           </details>
           <details>
             <summary data-i18n="faq.q6">Masaüstü uygulamasını nereden indiririm?</summary>
-            <p data-i18n="faq.a6">Windows, macOS ve Linux yükleyicileri depodan <code>pnpm --filter @fudislte/desktop dist</code> ile üretilir. Kurumlar kendi kod imzalama sertifikalarıyla imzalar; imzasız yükleyiciler yalnızca test içindir.</p>
-          </details>
-          <details>
-            <summary data-i18n="faq.q7">Yapay zekâ olmadan kullanabilir miyim?</summary>
-            <p data-i18n="faq.a7">Evet. Yapay zekâ tamamen isteğe bağlıdır ve şu an önizleme aşamasındadır; FUDISLTE onsuz eksiksiz çalışır.</p>
+            <p data-i18n="faq.a6"><a href="#download">İndirme bölümünden</a> Windows, macOS veya Linux sürümünü indirin. İlk açılışta şirketinizin FUDISLTE adresini (örneğin <code>chat.sirketiniz.com</code>) girin ve iş e-postanızla giriş yapın. Uygulamayı indirmek istemeyenler aynı adresi tarayıcıda açabilir.</p>
           </details>
           <details>
             <summary data-i18n="faq.q8">Nasıl katkı verebilirim?</summary>
@@ -1015,20 +1021,23 @@ tools/loadtest       <u data-i18n="tree.loadtest">Yük üreteci (Go)</u></code><
           <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M11.5 22V10h9.5M11.5 16h7.5"/></svg>
           <span>FUDISLTE</span>
         </a>
-        <p data-i18n="footer.tagline">Discord, Slack ve Microsoft Teams'e kendi sunucunuzda çalışan, kaynak kodu açık alternatif.</p>
+        <p data-i18n="footer.tagline">Discord, Slack ve Microsoft Teams'e kendi sunucunuzda çalışan, kaynak kodu incelenebilir alternatif.</p>
       </div>
       <nav class="footer-links" aria-label="Depo bağlantıları" data-i18n-attr="aria-label:footer.nav">
         <a data-repo="" href="#top">GitHub</a>
         <a data-repo="/blob/main/LICENSE" href="#top" data-i18n="footer.license">Lisans</a>
         <a data-repo="/blob/main/CONTRIBUTING.md" href="#top" data-i18n="footer.contrib">Katkı</a>
         <a data-repo="/blob/main/SECURITY.md" href="#top" data-i18n="footer.security">Güvenlik</a>
+        <a data-repo="/blob/main/PRIVACY.md" href="#top" data-i18n="footer.privacy">Gizlilik</a>
+        <a data-repo="/blob/main/TERMS.md" href="#top" data-i18n="footer.terms">Kullanım koşulları</a>
         <a data-repo="/blob/main/CHANGELOG.md" href="#top" data-i18n="footer.changelog">Değişiklikler</a>
         <a data-repo="/tree/main/docs" href="#top" data-i18n="footer.docs">Belgeler</a>
       </nav>
     </div>
     <div class="container footer-legal">
       <p>© 2026 Mahmut Eren Çiftçi · PolyForm Internal Use License 1.0.0</p>
-      <p data-i18n="footer.tm">Discord, Slack ve Microsoft Teams ilgili sahiplerinin ticari markalarıdır; FUDISLTE bu şirketlerle bağlantılı değildir.</p>
+      <p data-i18n="footer.by"><a href="https://oponoya.com" rel="noopener">Oponoya</a> tarafından geliştirilmiştir · <a href="https://oponoya.com" rel="noopener">oponoya.com</a></p>
+      <p data-i18n="footer.tm">Discord, Slack ve Microsoft Teams ilgili sahiplerinin, Claude ise Anthropic'in ticari markalarıdır; FUDISLTE bu şirketlerle bağlantılı değildir.</p>
     </div>
   </footer>
 </body>

@@ -33,7 +33,7 @@ options:
                      once, like every client reconnecting after a restart)
   --port PORT        API port on 127.0.0.1 (default 8091)
   --out DIR          where results go (default /tmp/fudislte-loadtest-results)
-  --keep             keep the API logs, binaries and session tokens in /tmp/fudislte-loadtest
+  --keep             keep the API logs, binaries and session tokens (in /tmp/fudislte-loadtest.*)
   -h, --help         show this help
 
 PostgreSQL must accept fudislte/fudislte on localhost:5432 (scripts/wsl/provision.sh); the
@@ -91,8 +91,8 @@ if ss -ltnH "sport = :$port" | grep -q .; then
 fi
 
 umask 077
-state=/tmp/fudislte-loadtest
-rm -rf "$state"
+# A fresh private directory: a fixed /tmp path could be created first by another user.
+state="$(mktemp -d /tmp/fudislte-loadtest.XXXXXX)"
 mkdir -p "$state/data" "$out"
 api_pid=""
 cleanup() {

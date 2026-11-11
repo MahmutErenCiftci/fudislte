@@ -168,9 +168,9 @@ func New(ctx context.Context, d Deps) (http.Handler, error) {
 				r.With(perm(org.PermMembersInvite)).Get("/invitations", h(orgSvc.ListInvitations))
 				r.With(perm(org.PermMembersInvite)).Post("/invitations", h(orgSvc.CreateInvitation))
 				r.With(perm(org.PermMembersInvite)).Delete("/invitations/{invitationID}", h(orgSvc.RevokeInvitation))
-				r.With(perm(org.PermMembersInvite)).Get("/access-keys", h(orgSvc.ListAccessKeys))
-				r.With(perm(org.PermMembersInvite)).Post("/access-keys", h(orgSvc.CreateAccessKey))
-				r.With(perm(org.PermMembersInvite)).Delete("/access-keys/{keyID}", h(orgSvc.RevokeAccessKey))
+				r.With(perm(org.PermMembersManage)).Get("/access-keys", h(orgSvc.ListAccessKeys))
+				r.With(perm(org.PermMembersManage)).Post("/access-keys", h(orgSvc.CreateAccessKey))
+				r.With(perm(org.PermMembersManage)).Delete("/access-keys/{keyID}", h(orgSvc.RevokeAccessKey))
 
 				r.With(perm(org.PermOrgManage)).Get("/domains", h(orgSvc.ListDomains))
 				r.With(perm(org.PermOrgManage)).Post("/domains", h(orgSvc.AddDomain))

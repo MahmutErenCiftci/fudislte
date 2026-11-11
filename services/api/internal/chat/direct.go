@@ -118,7 +118,9 @@ func (s *Service) OpenConversation(w http.ResponseWriter, r *http.Request) error
 				SELECT count(DISTINCT theirs.user_id)
 				FROM channel_members mine
 				JOIN channel_members theirs ON theirs.channel_id = mine.channel_id
-				WHERE mine.org_id = $1 AND mine.user_id = $2 AND theirs.user_id = ANY ($3)`,
+				WHERE mine.org_id = $1 AND mine.user_id = $2 AND theirs.user_id = ANY ($3)
+				  AND (mine.expires_at IS NULL OR mine.expires_at > now())
+				  AND (theirs.expires_at IS NULL OR theirs.expires_at > now())`,
 				m.Org.ID, m.UserID, others).Scan(&shared); err != nil {
 				return err
 			}

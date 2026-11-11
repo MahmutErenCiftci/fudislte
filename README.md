@@ -35,16 +35,19 @@ you. The interface is in Turkish and English.
 - **Operations:** Docker Compose deployment with automatic HTTPS, backup and restore
   scripts with verified restore drills, and [measured capacity](docs/architecture/load-testing.md).
 
-**Preview, not yet integrated:** an optional AI worker (summaries with cited sources,
-permission-aware search, transcription, agents that need approval) and a VS Code
-extension that shares an opted-in "coding" status.
-
 ## Status
 
-Version 0.1.0, early but complete through roadmap phase 5: foundation, accounts,
+Version 0.1.0, complete through roadmap phase 5: foundation, accounts,
 messaging, secure rooms, voice and video, projects and whiteboards. Developer features,
 knowledge base, AI integration and hardening follow — see the [roadmap](docs/roadmap.md)
 and the [changelog](CHANGELOG.md).
+
+## Download
+
+The desktop app for Windows, macOS and Linux is on the
+[latest release](https://github.com/MahmutErenCiftci/fudislte/releases/latest). On first
+launch, enter your organization's FUDISLTE address and sign in with your work email; the
+same address also works in a browser without installing anything.
 
 ## Quick start
 
@@ -118,12 +121,12 @@ The AI worker has `scripts/wsl/ai-test.sh`, the VS Code extension `npm test` in
 apps/web            React web app (also rendered by the desktop shell)
 apps/desktop        Electron shell
 services/api        Go API (modular monolith) + PostgreSQL migrations
-services/ai         Optional AI worker (Python, FastAPI; preview)
+services/ai         Optional AI worker (Python, FastAPI)
 services/registry   Project registry for opt-in server registrations (Go, standard library only)
 packages/ui         Design tokens and UI components
 packages/api-client Typed API client
 packages/platform   Web/desktop capability abstraction
-extensions/vscode   VS Code presence extension (preview; needs personal access tokens)
+extensions/vscode   VS Code presence extension (needs personal access tokens)
 infrastructure/     Docker Compose deployment
 docs/               Architecture, decisions, security, deployment
 scripts/            Development helpers; scripts/ops: backup, restore, restore drills, load tests
@@ -142,6 +145,7 @@ website/            Public landing page (static HTML/CSS/JS for Cloudflare Pages
 - Design and interface: [docs/design](docs/design/README.md)
 - Dependencies and their licenses: [docs/dependencies.md](docs/dependencies.md)
 - Releasing: [docs/releasing.md](docs/releasing.md)
+- Privacy and terms: [PRIVACY.md](PRIVACY.md), [TERMS.md](TERMS.md)
 
 ## Contributing
 

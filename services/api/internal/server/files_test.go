@@ -278,10 +278,14 @@ func TestArchiveAndRetention(t *testing.T) {
 	recent := owner.post(orgID, general, "Yeni duyuru")
 	file := owner.uploaded(orgID, general, "eski.txt", []byte("eski içerik"))
 	withFile := owner.postRich(orgID, general, map[string]any{"attachmentIds": []string{file.ID}})
+	// A files-only root that keeps getting replies must still lose its file on time.
+	threadFile := owner.uploaded(orgID, general, "konu.txt", []byte("konu dosyası"))
+	fileRoot := owner.postRich(orgID, general, map[string]any{"attachmentIds": []string{threadFile.ID}})
+	emp.postRich(orgID, general, map[string]any{"body": "Yeni yanıt", "parentId": fileRoot.ID})
 	unsent := owner.uploaded(orgID, general, "taslak.txt", []byte("gönderilmedi"))
 	ctx := t.Context()
 	if _, err := ts.db.Exec(ctx, `UPDATE messages SET created_at = now() - interval '40 days' WHERE id = ANY ($1::uuid[])`,
-		[]string{gone.ID, kept.ID, withFile.ID}); err != nil {
+		[]string{gone.ID, kept.ID, withFile.ID, fileRoot.ID}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := ts.db.Exec(ctx, `UPDATE attachments SET created_at = now() - interval '2 days' WHERE id = $1`, unsent.ID); err != nil {
@@ -311,7 +315,10 @@ func TestArchiveAndRetention(t *testing.T) {
 	if _, ok := ids[withFile.ID]; ok {
 		t.Fatal("expired message with a file kept")
 	}
-	for _, id := range []string{file.ID, unsent.ID} {
+	if m, ok := ids[fileRoot.ID]; !ok || !m.Deleted {
+		t.Fatalf("files-only root with a newer reply = %+v", m)
+	}
+	for _, id := range []string{file.ID, unsent.ID, threadFile.ID} {
 		if _, err := os.Stat(filepath.Join(ts.cfg.DataDir, "files", orgID, id)); !errors.Is(err, os.ErrNotExist) {
 			t.Fatalf("file %s still on disk: %v", id, err)
 		}

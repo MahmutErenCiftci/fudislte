@@ -1,0 +1,110 @@
+# Builds the desktop installers when a version tag (v0.1.0, v0.2.0, ...) is pushed and
+# publishes them on the GitHub release. The website's download buttons point at
+# /releases/latest/download/<name>, so the asset names below must not change.
+#
+# Code signing (optional, used when the secrets exist; see docs/releasing.md):
+#   Windows: WIN_CSC_LINK, WIN_CSC_KEY_PASSWORD
+#   macOS:   MAC_CSC_LINK, MAC_CSC_KEY_PASSWORD
+# Without them the installers are unsigned and Windows SmartScreen / macOS Gatekeeper
+# show a warning when they are opened.
+#
+# Every action is pinned to a commit SHA: the signing secrets reach these jobs, so a
+# moved tag must not be able to swap in other code. Update the SHAs deliberately.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    name: Desktop (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: windows-latest
+            built: "release/*.exe"
+            asset: FUDISLTE-Setup.exe
+          - os: macos-latest
+            built: "release/*.dmg"
+            asset: FUDISLTE-arm64.dmg
+          - os: ubuntu-latest
+            built: "release/*.AppImage"
+            asset: FUDISLTE-x86_64.AppImage
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # pnpm blocks install scripts, so fetch Electron's binary (checksum-verified by
+      # @electron/get) explicitly; electron-builder reuses it through electronDist.
+      - name: Download Electron
+        working-directory: apps/desktop
+        run: node node_modules/electron/install.js
+      - name: Build the installer
+        shell: bash
+        env:
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+        run: |
+          if [ -z "$WIN_CSC_LINK" ] && [ -z "$CSC_LINK" ]; then export CSC_IDENTITY_AUTO_DISCOVERY=false; fi
+          pnpm --filter @fudislte/desktop dist --publish never
+      - name: Give the installer its stable name
+        shell: bash
+        working-directory: apps/desktop
+        run: |
+          shopt -s nullglob
+          files=(${{ matrix.built }})
+          if [ "${#files[@]}" -ne 1 ]; then echo "expected one installer, found: ${files[*]}"; exit 1; fi
+          mkdir -p out && cp "${files[0]}" "out/${{ matrix.asset }}"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ matrix.asset }}
+          path: apps/desktop/out/${{ matrix.asset }}
+          if-no-files-found: error
+
+  publish:
+    name: Publish the release
+    needs: desktop
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: assets
+          merge-multiple: true
+      - name: Checksums
+        working-directory: assets
+        run: sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            /^## \[/ { if (on) exit; if (index($0, "[" v "]")) { on = 1; next } }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md || echo "FUDISLTE $GITHUB_REF_NAME" > notes.md
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" assets/* \
+            --title "FUDISLTE ${GITHUB_REF_NAME#v}" \
+            --notes-file notes.md \
+            --verify-tag

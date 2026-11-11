@@ -7,6 +7,7 @@ import { CaptureUpdateAction, Excalidraw, MainMenu } from '@excalidraw/excalidra
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 import type { Collaborator, ExcalidrawImperativeAPI, SocketId } from '@excalidraw/excalidraw/types'
 import { ApiError, type Board, type BoardElement, type LiveEvents } from '@fudislte/api-client'
+import { getPlatform } from '@fudislte/platform'
 import { memo, useEffect, useRef, useState } from 'react'
 
 import { t, useLanguage } from '../../i18n'
@@ -17,6 +18,14 @@ import { onBoardEvent } from './live'
 import { batches, mergeElements, pendingChanges, personColor, SYNCED_TYPES } from './sync'
 
 const SEND_EVERY_MS = 100
+
+function isSameOrigin(link: string): boolean {
+  try {
+    return new URL(link, window.location.href).origin === window.location.origin
+  } catch {
+    return false
+  }
+}
 const CURSOR_EVERY_MS = 80
 const CURSOR_TTL_MS = 15_000
 
@@ -213,6 +222,16 @@ function BoardCanvas({ board, initialElements, clientId, onEdit, onProblem }: Pr
         langCode={language === 'tr' ? 'tr-TR' : 'en'}
         name={board.title}
         validateEmbeddable={false}
+        onLinkOpen={(element, event) => {
+          // Excalidraw opens a link "in place" when it merely contains this site's address,
+          // so a shape could replace the app with a look-alike page. Only links that really
+          // point here stay in the tab; every other one opens outside (a new tab, or the
+          // system browser in the desktop app).
+          if (element.link && !isSameOrigin(element.link)) {
+            event.preventDefault()
+            void getPlatform().openExternal(element.link).catch(() => {})
+          }
+        }}
         onPaste={(data) => {
           if (data.files && Object.keys(data.files).length > 0) {
             apiRef.current?.setToast({ message: t('boards.unsupported'), duration: 4000 })

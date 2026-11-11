@@ -7,7 +7,13 @@ import { contextBridge, ipcRenderer } from 'electron'
 const version = process.argv.find((a) => a.startsWith('--fudislte-version='))?.split('=')[1] ?? '0.0.0'
 const os: DesktopBridge['os'] = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux'
 
-if (location.protocol === 'fudislte:') {
+if (location.protocol === 'fudislte:' && location.pathname === '/picker.html') {
+  // The app's own screen-share picker; the main process answers only its window.
+  contextBridge.exposeInMainWorld('fudisltePicker', {
+    request: () => ipcRenderer.invoke('fudislte:picker:request'),
+    choose: (sourceId: string | null) => ipcRenderer.invoke('fudislte:picker:choose', sourceId === null ? null : String(sourceId)),
+  })
+} else if (location.protocol === 'fudislte:') {
   // The bundled "connect to server" page.
   contextBridge.exposeInMainWorld('fudislteConnect', {
     version,

@@ -63,8 +63,10 @@ bash scripts/install/preflight.sh -d DOMAIN -s SMTP_HOST:PORT [--media]
 
 Fix every `FAIL`, then run it again:
 
-- **docker / compose missing:** `curl -fsSL https://get.docker.com | sh` (Ubuntu, Debian,
-  RHEL family).
+- **docker / compose missing:** with the user's agreement, install Docker Engine from
+  Docker's package repository (https://docs.docker.com/engine/install/). If the user
+  prefers Docker's convenience script, download it first and run it as a file, never piped
+  into a root shell: `curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh`.
 - **port 80 or 443 in use:** find what holds it (`ss -tlnp`); usually another web server.
   Ask the user before stopping or removing it — FUDISLTE's Caddy needs both ports.
 - **dns:** the user adds an `A` record (and `AAAA` if the server has IPv6) at their DNS
@@ -163,21 +165,28 @@ Their first steps in the browser:
    enters the key and is in at once; later sign-ins use email codes.
 3. **Settings → Security → Session lifetime:** 48 hours by default, for everyone.
 4. **Settings → Access:** add the company email domain and verify it with a DNS TXT record,
-   so colleagues can join with their work email and team leads can create access keys.
+   so colleagues can join with their work email and administrators can create access keys.
 5. The desktop app (Windows, macOS, Linux) connects to the same address.
 
 ## 9. Backups
 
-Strongly recommend them; set them up with the user's agreement.
+Strongly recommend them; set them up with the user's agreement. Backups are always
+encrypted with `age`; the private key must never be created or stored on this server.
+
+1. Install `age` on the server (`apt install age`).
+2. Ask the user to create the key pair on their own computer (`age-keygen -o
+   fudislte-backup.key`), keep the key file offline in two places, and paste only the
+   **public** key (`age1…`). Never ask for the private key and never run `age-keygen`
+   here. Without that key the backups cannot be restored.
+3. Take the first backup:
 
 ```bash
 mkdir -p /var/backups/fudislte                       # on another disk if possible
-bash scripts/ops/backup.sh -p fudislte -o /var/backups/fudislte --with-caddy
+bash scripts/ops/backup.sh -p fudislte -o /var/backups/fudislte --with-caddy -r age1…
 ```
 
-For encryption install `age`, create a key with `age-keygen -o /root/fudislte-backup.key`,
-pass its public key with `-r age1…`, and tell the user to keep a copy of the key file
-somewhere other than this server — without it the backups cannot be restored. Then add
+Recommend storage the server can add to but not change (another host that pulls the
+backups, or object storage with object lock). Then add
 the daily cron entry from `docs/deployment/backup-restore.md` ("Taking a backup"),
 adapted to this checkout's path, and show the user the result of the first run.
 

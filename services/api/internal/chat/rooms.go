@@ -44,6 +44,7 @@ var (
 	errWrongPassword = httpx.NewError(http.StatusForbidden, "wrong_password", "The password is not correct.")
 	errNotAllowed    = httpx.NewError(http.StatusForbidden, "room_not_allowed", "You are not on this room's access list.")
 	errNotRestricted = httpx.NewError(http.StatusConflict, "room_not_restricted", "Only restricted rooms have an access list.")
+	errSelfAccess    = httpx.NewError(http.StatusForbidden, "room_self_access", "You cannot add yourself to a room's access list. Ask someone on the list.")
 )
 
 // Room is what a person sees of a room; the caller's admission included.
@@ -112,20 +113,24 @@ func (rm *Room) isCreator(m *org.Membership) bool {
 	return rm.CreatedBy != nil && *rm.CreatedBy == m.UserID
 }
 
-// settle works out what the caller may do. Open and protected rooms are for people who
-// may enter rooms; restricted ones for their access list only. Creators always enter
-// without the password they set; room managers change settings but are admitted like
-// everyone else.
+// settle works out what the caller may do. Rooms are for people who may enter rooms;
+// restricted ones only for those on their access list as well. Creators enter without
+// the password they set, but only while their role still lets them use rooms: a creator
+// who is demoted (or removed and invited again) keeps no back door. Room managers change
+// settings but are admitted like everyone else.
 func (rm *Room) settle(m *org.Membership) {
-	creator := rm.isCreator(m)
+	mayUse := m.Can(org.PermRoomsJoin)
+	creator := rm.isCreator(m) && mayUse
 	rm.CanManage = creator || m.Can(org.PermRoomsManage)
 	switch {
+	case !mayUse:
+		rm.CanEnter = false
 	case rm.Admitted || creator:
 		rm.CanEnter = true
 	case rm.Access == AccessRestricted:
 		rm.CanEnter = rm.Allowed
 	default:
-		rm.CanEnter = m.Can(org.PermRoomsJoin)
+		rm.CanEnter = true
 	}
 	rm.NeedsPassword = rm.HasPassword && !creator && !rm.Admitted
 }
@@ -267,6 +272,9 @@ func (s *Service) CreateRoom(w http.ResponseWriter, r *http.Request) error {
 
 	var hash *string
 	if in.Password != "" {
+		if !s.roomPasswordsByUser.Allow(m.UserID.String()) {
+			return httpx.ErrRateLimited
+		}
 		h, err := passwords.Hash(in.Password)
 		if err != nil {
 			return err
@@ -479,6 +487,9 @@ func (s *Service) SetRoomSecurity(w http.ResponseWriter, r *http.Request) error 
 	}
 	var hash *string
 	if in.Password != "" {
+		if !s.roomPasswordsByUser.Allow(m.UserID.String()) {
+			return httpx.ErrRateLimited
+		}
 		h, err := passwords.Hash(in.Password)
 		if err != nil {
 			return err
@@ -580,6 +591,11 @@ func (s *Service) SetRoomAccess(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	list := unique(in.UserIDs)
+	// Managing a room is not a way into it (ADR-0010): only someone already on the list,
+	// or its creator, may keep themselves on it.
+	if slices.Contains(list, m.UserID) && !rm.Allowed && !rm.isCreator(m) {
+		return errSelfAccess
+	}
 	if rm.CreatedBy != nil && !slices.Contains(list, *rm.CreatedBy) {
 		list = append(list, *rm.CreatedBy) // the creator always stays on the list
 	}
@@ -653,7 +669,7 @@ func (s *Service) EnterRoom(w http.ResponseWriter, r *http.Request) error {
 		return s.respondRoom(w, r, m, rm.ID)
 	}
 	// Being admitted again with the password renews an expiring admission.
-	needsPassword := rm.HasPassword && !rm.isCreator(m)
+	needsPassword := rm.HasPassword && !(rm.isCreator(m) && m.Can(org.PermRoomsJoin))
 	var expires *time.Time
 	if needsPassword {
 		if !s.roomAttempts.Allow(m.UserID.String() + "/" + rm.ID.String()) {
@@ -849,7 +865,18 @@ func (s *Service) ExpireAdmissions(ctx context.Context, every time.Duration) {
 }
 
 func (s *Service) expireAdmissions(ctx context.Context) error {
-	rows, err := s.db.Query(ctx, `DELETE FROM channel_members WHERE expires_at <= now() RETURNING org_id, channel_id, user_id`)
+	// Expired admissions end, and so do those of people who may no longer be in the room:
+	// their role lost rooms.join, or they were taken off a restricted room's list.
+	rows, err := s.db.Query(ctx, `
+		DELETE FROM channel_members cm USING channels c
+		WHERE c.id = cm.channel_id AND (
+		  cm.expires_at <= now()
+		  OR (c.kind = 'room' AND (
+		    NOT EXISTS (SELECT 1 FROM memberships m JOIN roles r ON r.id = m.role_id
+		                WHERE m.org_id = c.org_id AND m.user_id = cm.user_id AND 'rooms.join' = ANY (r.permissions))
+		    OR (c.access = 'restricted' AND NOT EXISTS (
+		      SELECT 1 FROM room_access ra WHERE ra.channel_id = c.id AND ra.user_id = cm.user_id)))))
+		RETURNING cm.org_id, cm.channel_id, cm.user_id`)
 	if err != nil {
 		return err
 	}

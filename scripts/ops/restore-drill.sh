@@ -141,7 +141,7 @@ FUDISLTE_DRILL_EDGE_SUBNET=$(free_subnet)
 EOF
 compose_cmd DRILL "$source_dir" "$drill" "$work/drill.env" "${drill_files[@]}"
 
-age_backup=() age_restore=()
+age_backup=(--unencrypted) age_restore=()  # the drill's own throwaway directory
 if $use_age; then
   need age-keygen
   age-keygen -o "$work/drill.agekey" 2>/dev/null

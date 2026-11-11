@@ -40,6 +40,9 @@ type Service struct {
 	uploadsByUser   *httpx.Limiter
 	// roomAttempts limits room password guesses per person and room.
 	roomAttempts *httpx.Limiter
+	// roomPasswordsByUser limits how often one person makes the server hash a new room
+	// password, so nobody can keep the hashing slots busy for everyone else.
+	roomPasswordsByUser *httpx.Limiter
 	// meetingWrites limits meeting changes per person: each one may email every invitee.
 	meetingWrites *httpx.Limiter
 	// media is the LiveKit server for voice and video; nil or unconfigured disables them.
@@ -51,16 +54,17 @@ type Service struct {
 
 func NewService(db *pgxpool.Pool, events realtime.Publisher, files storage.Store, maxUpload int64) *Service {
 	return &Service{
-		db:              db,
-		events:          events,
-		files:           files,
-		maxUpload:       maxUpload,
-		postsByUser:     httpx.NewLimiter(200*time.Millisecond, 20),
-		reactionsByUser: httpx.NewLimiter(100*time.Millisecond, 40),
-		typingByUser:    httpx.NewLimiter(time.Second, 3),
-		uploadsByUser:   httpx.NewLimiter(2*time.Second, 20),
-		roomAttempts:    httpx.NewLimiter(time.Minute, 5),
-		meetingWrites:   httpx.NewLimiter(3*time.Second, 20),
+		db:                  db,
+		events:              events,
+		files:               files,
+		maxUpload:           maxUpload,
+		postsByUser:         httpx.NewLimiter(200*time.Millisecond, 20),
+		reactionsByUser:     httpx.NewLimiter(100*time.Millisecond, 40),
+		typingByUser:        httpx.NewLimiter(time.Second, 3),
+		uploadsByUser:       httpx.NewLimiter(2*time.Second, 20),
+		roomAttempts:        httpx.NewLimiter(time.Minute, 5),
+		roomPasswordsByUser: httpx.NewLimiter(10*time.Second, 10),
+		meetingWrites:       httpx.NewLimiter(3*time.Second, 20),
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -155,6 +156,16 @@ func (s *Service) UpdateMember(w http.ResponseWriter, r *http.Request) error {
 				actor.Org.ID, targetID, role.ID); err != nil {
 				return err
 			}
+			// A role without rooms.join ends every room admission at once, including the
+			// rooms the person created (the chat cleanup job also catches edited roles).
+			if !slices.Contains(role.Permissions, PermRoomsJoin) {
+				if _, err := tx.Exec(ctx, `
+					DELETE FROM channel_members cm USING channels c
+					WHERE c.id = cm.channel_id AND c.kind = 'room' AND cm.org_id = $1 AND cm.user_id = $2`,
+					actor.Org.ID, targetID); err != nil {
+					return err
+				}
+			}
 			ev := audit.FromRequest(r, "member.role_changed")
 			ev.OrgID, ev.ActorID = &actor.Org.ID, &actor.UserID
 			ev.TargetType, ev.TargetID = "user", targetID.String()
@@ -202,6 +213,11 @@ func (s *Service) RemoveMember(w http.ResponseWriter, r *http.Request) error {
 			return errLastOwner
 		}
 		if _, err := tx.Exec(ctx, `DELETE FROM memberships WHERE org_id = $1 AND user_id = $2`, actor.Org.ID, targetID); err != nil {
+			return err
+		}
+		// A room's creator enters without its password; someone who leaves the workspace
+		// must not get that back by being invited again.
+		if _, err := tx.Exec(ctx, `UPDATE channels SET created_by = NULL WHERE org_id = $1 AND kind = 'room' AND created_by = $2`, actor.Org.ID, targetID); err != nil {
 			return err
 		}
 		ev := audit.FromRequest(r, "member.removed")

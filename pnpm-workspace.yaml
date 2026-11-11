@@ -8,3 +8,11 @@ allowBuilds:
   # Squirrel installers are not used (NSIS is); its script stays blocked.
   electron-winstaller: false
   esbuild: false
+
+# Security fixes for transitive dependencies of Excalidraw (pnpm audit). Remove an entry
+# once the parent package ships the fixed version itself.
+overrides:
+  nanoid@<3.3.18: ^3.3.18
+  nanoid@>=4.0.0 <5.1.16: ^5.1.16
+  lodash-es@<4.18.1: ^4.18.1
+  katex@<0.18.2: ^0.18.2

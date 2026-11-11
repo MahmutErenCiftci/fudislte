@@ -292,3 +292,74 @@ func byID(elements []sceneElement, id string) sceneElement {
 	}
 	return sceneElement{}
 }
+
+// Boards stay bounded: shapes cannot be made permanent with outlandish versions, and the
+// stored scene, deleted shapes included, has a size limit that old deletions make room
+// for first.
+func TestBoardLimits(t *testing.T) {
+	ts := newServer(t)
+	owner, orgID := ts.setupInstance()
+	b := owner.createBoard(orgID, map[string]any{"title": "Sınırlar"})
+	const win = "owner-window-1"
+
+	// Versions may only grow by a bounded step, and new shapes start low.
+	if n := owner.saveShapes(orgID, b.ID, win, shape("a", 1, 5, 0, false)); n != 1 {
+		t.Fatalf("accepted %d", n)
+	}
+	if n := owner.saveShapes(orgID, b.ID, win, shape("a", 1+(1<<21), 5, 1, false)); n != 0 {
+		t.Fatal("a version jump far beyond the last edit was accepted")
+	}
+	if n := owner.saveShapes(orgID, b.ID, win, shape("a", 2, 5, 2, false)); n != 1 {
+		t.Fatal("a normal edit after a refused jump was not accepted")
+	}
+	if n := owner.saveShapes(orgID, b.ID, win, shape("huge", (1<<31)+1, 5, 0, false)); n != 0 {
+		t.Fatal("a new shape with an outlandish version was accepted")
+	}
+
+	// Fill the board close to its size limit with large shapes, then delete them all:
+	// the deletions are kept, but new shapes still fit because the oldest ones go first.
+	big := func(id string, version int, deleted bool) map[string]any {
+		s := shape(id, version, 7, 3, deleted)
+		s["type"] = "freedraw"
+		s["customData"] = map[string]string{"pad": strings.Repeat("x", 250<<10)}
+		return s
+	}
+	const perBatch = 12
+	var ids []string
+	for i := range 130 {
+		ids = append(ids, fmt.Sprintf("big%03d", i))
+	}
+	save := func(version int, deleted bool, list []string) {
+		for start := 0; start < len(list); start += perBatch {
+			var batch []map[string]any
+			for _, id := range list[start:min(start+perBatch, len(list))] {
+				batch = append(batch, big(id, version, deleted))
+			}
+			owner.saveShapes(orgID, b.ID, win, batch...)
+			time.Sleep(60 * time.Millisecond) // stay under the write rate limit
+		}
+	}
+	save(1, false, ids)
+	// The board is now full: one more large shape does not fit while everything is live.
+	r := owner.do(http.MethodPatch, "/api/v1/orgs/"+orgID+"/boards/"+b.ID+"/elements",
+		map[string]any{"clientId": win, "elements": []any{big("extra", 1, false)}})
+	expectError(t, r, http.StatusConflict, "board_too_large")
+	save(2, true, ids)
+	// After deleting, new large shapes fit: the oldest deleted ones make room.
+	var fresh []string
+	for i := range 24 {
+		fresh = append(fresh, fmt.Sprintf("new%03d", i))
+	}
+	save(1, false, fresh)
+	_, live := owner.scene(orgID, b.ID, "")
+	if len(live) != 1+len(fresh) {
+		t.Fatalf("live shapes = %d, want %d", len(live), 1+len(fresh))
+	}
+	var stored int
+	if err := ts.db.QueryRow(t.Context(), `SELECT coalesce(sum(size), 0) FROM board_elements WHERE board_id = $1`, b.ID).Scan(&stored); err != nil {
+		t.Fatal(err)
+	}
+	if stored > 32<<20 {
+		t.Fatalf("stored %d bytes, over the limit", stored)
+	}
+}

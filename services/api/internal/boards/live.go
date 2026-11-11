@@ -76,8 +76,37 @@ func (r *registry) heartbeat(sc scope, boardID uuid.UUID, clientID string, user 
 		return false
 	}
 	before := bv.hasUser(user.ID)
+	bv.forgetOldestBeyond(user.ID, maxWindowsPerUser-1)
 	bv.clients[key] = &client{user: user, since: at, seen: at}
 	return !before
+}
+
+// maxWindowsPerUser bounds the windows one person can register on a board, so made-up
+// window IDs cannot grow the list (and the time each heartbeat spends scanning it).
+const maxWindowsPerUser = 16
+
+// forgetOldestBeyond drops userID's least recently seen windows until at most keep remain.
+func (bv *boardViewers) forgetOldestBeyond(userID uuid.UUID, keep int) {
+	for {
+		var (
+			oldest     clientKey
+			oldestSeen time.Time
+			n          int
+		)
+		for k, c := range bv.clients {
+			if k.userID != userID {
+				continue
+			}
+			n++
+			if n == 1 || c.seen.Before(oldestSeen) {
+				oldest, oldestSeen = k, c.seen
+			}
+		}
+		if n <= keep {
+			return
+		}
+		delete(bv.clients, oldest)
+	}
 }
 
 // leave forgets a window of userID; it reports whether userID stopped viewing.

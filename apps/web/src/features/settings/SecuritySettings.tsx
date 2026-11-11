@@ -21,6 +21,7 @@ import { type ChangeEvent, type FormEvent, useState } from 'react'
 import { isLanguage, type Language, languages, translate, useLanguage, useT } from '../../i18n'
 import { api, errorMessage, fieldErrors, formError, queryKeys } from '../../lib/api'
 import { formatDate, formatDateTime } from '../../lib/format'
+import { PRIVACY_NOTICE_URL } from '../../lib/links'
 import { can, canAssign } from '../../lib/permissions'
 import { useWorkspace } from '../../shell/context'
 import { RequirePermission, SettingsCard } from './SettingsLayout'
@@ -28,7 +29,7 @@ import { RequirePermission, SettingsCard } from './SettingsLayout'
 /** IT tools: prepared accounts that open with a key, and the server-wide session lifetime. */
 export function SecuritySettings() {
   const { me, workspace } = useWorkspace()
-  const canKeys = can(workspace, 'members.invite')
+  const canKeys = can(workspace, 'members.manage')
   const admin = me.user.isInstanceAdmin
   return (
     <RequirePermission allowed={canKeys || admin}>
@@ -424,7 +425,9 @@ function Registration() {
             <dd className="font-medium">{current.version}</dd>
           </div>
         </dl>
-        <p className="text-xs text-muted-foreground">{t('registration.never')}</p>
+        <p className="text-xs text-muted-foreground">
+          {t('registration.never')} <a className="underline underline-offset-2 hover:text-foreground" href={PRIVACY_NOTICE_URL} target="_blank" rel="noopener noreferrer">{t('registration.privacy')}</a>
+        </p>
         {current.enabled && (
           <p className="text-[13px] text-muted-foreground">
             {current.lastSentAt ? t('registration.lastSent', { date: formatDateTime(current.lastSentAt) }) : t('registration.pending')}

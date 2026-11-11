@@ -2866,3 +2866,30 @@ code {
     transition: none !important;
   }
 }
+
+/* ---------- Downloads ---------- */
+
+.download-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.download-card:hover,
+.download-card:focus-visible {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.download-card .btn {
+  margin-top: auto;
+}
+
+.downloads + .note {
+  margin-top: 20px;
+  text-align: center;
+}

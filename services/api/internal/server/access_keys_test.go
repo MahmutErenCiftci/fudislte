@@ -154,11 +154,25 @@ func TestAccessKeyRules(t *testing.T) {
 	}
 	expectError(t, redeem(late.Key), http.StatusUnauthorized, "invalid_access_key")
 
-	// People who may invite, but do not run the server, only create keys for addresses on
-	// the workspace's verified domains, and only with roles below their own.
+	// A key replaces proof of owning the mailbox, so inviting is not enough: a team leader
+	// could otherwise prepare a colleague's account and sign in as them.
 	lead, _ := ts.join(owner, orgID, "lead@example.com", "team-leader")
+	expectError(t, lead.do(http.MethodGet, keys, nil), http.StatusForbidden, "forbidden")
 	expectError(t, lead.do(http.MethodPost, keys, map[string]any{"email": "new@firma.test", "displayName": "New", "roleId": roles["employee"].ID}),
+		http.StatusForbidden, "forbidden")
+
+	// Member managers who do not run the server only create keys for addresses on the
+	// workspace's verified domains, and only with roles below their own.
+	admin, _ := ts.join(owner, orgID, "admin@example.com", "administrator")
+	expectError(t, admin.do(http.MethodPost, keys, map[string]any{"email": "new@firma.test", "displayName": "New", "roleId": roles["employee"].ID}),
 		http.StatusUnprocessableEntity, "validation_failed")
+	// The domain is checked first, so the answer never reveals whether an address outside
+	// the workspace already has an account on the server.
+	existing := admin.do(http.MethodPost, keys, map[string]any{"email": ownerEmail, "displayName": "Owner", "roleId": roles["employee"].ID})
+	unknown := admin.do(http.MethodPost, keys, map[string]any{"email": "nobody@example.com", "displayName": "Nobody", "roleId": roles["employee"].ID})
+	if existing.status != unknown.status || string(existing.body) != string(unknown.body) {
+		t.Fatalf("key creation tells existing accounts apart: %s vs %s", existing.body, unknown.body)
+	}
 	domains := "/api/v1/orgs/" + orgID + "/domains"
 	var listed struct {
 		Domains []struct {
@@ -169,11 +183,15 @@ func TestAccessKeyRules(t *testing.T) {
 	owner.must(http.StatusOK, http.MethodGet, domains, nil).decode(t, &listed)
 	ts.dns.set("firma.test", listed.Domains[0].Record)
 	owner.must(http.StatusOK, http.MethodPost, domains+"/firma.test/verify", nil)
-	expectError(t, lead.do(http.MethodPost, keys, map[string]any{"email": "new@firma.test", "displayName": "New", "roleId": roles["administrator"].ID}),
+	expectError(t, admin.do(http.MethodPost, keys, map[string]any{"email": "new@firma.test", "displayName": "New", "roleId": roles["administrator"].ID}),
 		http.StatusForbidden, "forbidden")
-	lead.createKey(orgID, map[string]any{"email": "new@firma.test", "displayName": "New", "roleId": roles["employee"].ID})
+	pending := admin.createKey(orgID, map[string]any{"email": "new@firma.test", "displayName": "New", "roleId": roles["employee"].ID})
 
-	// Members without the invite permission see nothing.
+	// Removing the domain stops its pending keys from working.
+	owner.must(http.StatusNoContent, http.MethodDelete, domains+"/firma.test", nil)
+	expectError(t, redeem(pending.Key), http.StatusUnauthorized, "invalid_access_key")
+
+	// Members without the permission see nothing.
 	dev, _ := ts.join(owner, orgID, "dev@example.com", "developer")
 	expectError(t, dev.do(http.MethodGet, keys, nil), http.StatusForbidden, "forbidden")
 

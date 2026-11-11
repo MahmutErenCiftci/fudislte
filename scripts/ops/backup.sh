@@ -24,7 +24,9 @@ OUTPUT_DIR/fudislte-PROJECT-<UTC time>/ holding:
 
 The database is dumped before the files are copied, so a file uploaded in between is at
 worst an extra file, never a missing one. The deployment keeps running and is only read.
-Backups contain personal data: OUTPUT_DIR should be on an encrypted disk, or use -r.
+Backups contain every message and file, so they are encrypted with age: give the public
+key with -r (keep the private key off this server). Only --unencrypted writes plaintext,
+for an OUTPUT_DIR that is already on an encrypted disk.
 
 options:
   -p, --project-name NAME       Compose project name (see: docker compose ls)
@@ -36,18 +38,20 @@ options:
                                 (default: .env when it exists)
   -r, --age-recipient KEY       encrypt dump, files and checksums with age; repeatable
   -R, --age-recipients-file F   encrypt to the age recipients listed in F
+      --unencrypted             write plaintext (required when there is no -r or -R)
       --with-caddy              also back up Caddy's data; needed with "tls internal",
                                 whose private root CA clients trust
   -h, --help                    show this help
 
-example, the local stack of scripts/wsl/docker-local.sh:
+examples:
+  scripts/ops/backup.sh -p fudislte -o /var/backups/fudislte --with-caddy -r age1…
   scripts/ops/backup.sh -p fudislte-local -f compose.yml -f compose.local.yml \
-    -e .env.local -o /var/backups/fudislte
+    -e .env.local -o /var/backups/fudislte --unencrypted     # the local test stack
 EOF
 }
 
 project="" output="" project_dir="$here/../../infrastructure/docker" env_file="" recipients_file=""
-with_caddy=false
+with_caddy=false unencrypted=false
 files=() recipients=()
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -57,6 +61,11 @@ while [ $# -gt 0 ]; do
       ;;
     --with-caddy)
       with_caddy=true
+      shift
+      continue
+      ;;
+    --unencrypted)
+      unencrypted=true
       shift
       continue
       ;;
@@ -107,6 +116,12 @@ done
 if [ -n "$recipients_file" ]; then
   [ -f "$recipients_file" ] || die "recipients file not found: $recipients_file"
   age_args+=(-R "$recipients_file")
+fi
+if [ ${#age_args[@]} -eq 0 ] && [ "$unencrypted" != true ]; then
+  die "backups hold every message and file: pass the age public key with -r age1… (keep the private key off this server), or --unencrypted if $output is on an encrypted disk"
+fi
+if [ ${#age_args[@]} -gt 0 ] && [ "$unencrypted" = true ]; then
+  die "--unencrypted cannot be combined with -r or -R"
 fi
 if [ ${#age_args[@]} -gt 0 ]; then
   need age

@@ -31,6 +31,8 @@ nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
+  # The installer shows the license terms and asks the user to accept them.
+  license: ../../LICENSE
 mac:
   target: dmg
   category: public.app-category.productivity

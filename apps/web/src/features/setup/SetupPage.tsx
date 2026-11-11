@@ -6,6 +6,7 @@ import { Navigate, useNavigate } from 'react-router'
 
 import { useT } from '../../i18n'
 import { api, errorMessage, fieldErrors, formError, queryKeys } from '../../lib/api'
+import { PRIVACY_NOTICE_URL } from '../../lib/links'
 import { useMeta } from '../../lib/session'
 import { AuthLayout, FullScreenMessage } from '../auth/AuthLayout'
 import { CodeInput, isCompleteCode, ResendCode } from '../auth/CodeInput'
@@ -101,6 +102,9 @@ export function SetupPage() {
             <span className="grid gap-0.5">
               <span className="font-medium">{t('setup.shareTitle')}</span>
               <span className="text-muted-foreground">{t('setup.shareText')}</span>
+              <span>
+                <a className="underline underline-offset-2 hover:text-foreground" href={PRIVACY_NOTICE_URL} target="_blank" rel="noopener noreferrer">{t('registration.privacy')}</a>
+              </span>
             </span>
           </label>
         )}

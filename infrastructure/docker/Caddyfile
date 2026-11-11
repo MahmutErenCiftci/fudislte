@@ -19,7 +19,9 @@
 		Cross-Origin-Opener-Policy "same-origin"
 		# Microphone, camera and screen capture serve voice and video (ADR-0011), this origin only.
 		Permissions-Policy "camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=(), usb=()"
-		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		# "?" sets the policy only when the response has none: the API sends its own,
+		# stricter ones (a sandbox for uploaded files), which must not be replaced.
+		?Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 		-Server
 	}
 

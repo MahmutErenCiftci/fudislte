@@ -75,9 +75,9 @@ line stays current for people not connected.
 - Without microphone permission people still join and listen. When the browser blocks
   audio autoplay, a banner asks for a click.
 - Desktop: the shell grants `media` (microphone, camera) and `display-capture` only to the
-  connected server; screen sharing opens a picker in the page with screens and windows
-  and their thumbnails (system audio with whole screens on Windows); cancelling shares
-  nothing.
+  connected server; screen sharing opens the app's own picker window with screens and
+  windows and their thumbnails (system audio with whole screens on Windows); the page
+  never sees that list; cancelling shares nothing.
 
 ## 5. Deployment
 

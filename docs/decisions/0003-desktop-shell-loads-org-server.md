@@ -27,5 +27,7 @@ Tauri and Wails remain possible later because the React app has no Electron impo
   than the installed shell. Bridge methods added after the first release are optional
   in the contract, and `packages/platform` gives the page a harmless fallback when one is
   missing, so an older shell only lacks that feature. Phase 4 found this: a shell from
-  before screen sharing crashed the whole page on the missing `onDisplayPick`. Removing
+  before screen sharing crashed the whole page on the missing `onDisplayPick`. (Since
+  2026-11 the shell draws its own screen-share picker; `onDisplayPick` stays in the bridge
+  but is never called, and `chooseDisplaySource` does nothing.) Removing
   or changing an existing method needs a compatibility plan.

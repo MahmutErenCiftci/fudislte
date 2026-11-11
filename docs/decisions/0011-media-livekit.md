@@ -30,8 +30,11 @@ must cut media as well as messages and files (ADR-0010). Building an SFU is out 
   per window in a store outside React routes, so voice survives navigation; a dock in the
   sidebar shows and controls it on every page.
 - **Desktop:** the Electron shell grants microphone, camera and screen capture only to the
-  connected server's origin, and screen sharing always goes through a picker in the page
-  (screens and windows with thumbnails); nothing is shared without a choice.
+  connected server's origin, and screen sharing always goes through the app's own picker
+  window (screens and windows with thumbnails), like a browser's picker; the server's page
+  receives only the stream that was picked and nothing is shared without a choice. (Until
+  2026-11 the picker was drawn by the page, which then saw every window's title and
+  thumbnail and could answer for the person.)
 
 ## Consequences
 - Without LiveKit settings voice and video are simply absent (`503 media_unavailable`, no

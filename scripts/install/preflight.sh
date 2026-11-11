@@ -90,7 +90,7 @@ if command -v docker >/dev/null 2>&1; then
     fi
   fi
 else
-  fail docker "not installed (install: curl -fsSL https://get.docker.com | sh)"
+  fail docker "not installed (install Docker Engine from Docker's package repository: https://docs.docker.com/engine/install/)"
 fi
 
 # Ports Caddy needs; LiveKit's when voice and video are wanted.
@@ -130,7 +130,10 @@ fi
 # Sign-in codes go out by email, so the relay must be reachable.
 if [ -n "$smtp" ]; then
   host="${smtp%:*}" port="${smtp##*:}"
-  if timeout 5 bash -c "exec 3<>/dev/tcp/$host/$port" 2>/dev/null; then
+  # Validated and passed as arguments, never pasted into the command: this runs as root.
+  if ! [[ "$host" =~ ^[A-Za-z0-9.-]{1,253}$ && "$port" =~ ^[0-9]{1,5}$ ]]; then
+    fail smtp "$smtp is not HOST:PORT"
+  elif timeout 5 bash -c 'exec 3<>"/dev/tcp/$1/$2"' _ "$host" "$port" 2>/dev/null; then
     ok smtp "$host:$port reachable"
   else
     fail smtp "$host:$port not reachable (wrong host or port, or the provider blocks outgoing mail ports)"

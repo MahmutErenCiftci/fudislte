@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
@@ -38,7 +39,7 @@ func RequestLogger(next http.Handler) http.Handler {
 		}
 		slog.Log(r.Context(), level, "http request",
 			"method", r.Method,
-			"path", r.URL.Path,
+			"path", redactPath(r.URL.Path),
 			"status", ww.Status(),
 			"bytes", ww.BytesWritten(),
 			"duration_ms", time.Since(start).Milliseconds(),
@@ -62,4 +63,18 @@ func Recoverer(next http.Handler) http.Handler {
 		}()
 		next.ServeHTTP(w, r)
 	})
+}
+
+// redactPath hides secrets that travel in the path: an invitation token is a bearer
+// credential, so anyone reading the logs could otherwise use the link.
+func redactPath(p string) string {
+	const prefix = "/api/v1/invitations/"
+	if !strings.HasPrefix(p, prefix) {
+		return p
+	}
+	rest := p[len(prefix):]
+	if i := strings.IndexByte(rest, '/'); i >= 0 {
+		return prefix + "REDACTED" + rest[i:]
+	}
+	return prefix + "REDACTED"
 }

@@ -32,9 +32,16 @@ while the version is 0.x, minor versions may break things and say so in the chan
   Each image carries its notices: `/licenses` in the api and ai images, `/licenses.txt`,
   `/LICENSE.txt` and `/NOTICE.txt` served by the web image. A build fails when a Go module
   or a whiteboard font has no recognisable license.
-- **Desktop installers:** `pnpm --filter @fudislte/desktop dist` on each platform, signed
-  with the project's certificates (`CSC_LINK` and `CSC_KEY_PASSWORD` on Windows; Developer
-  ID and notarization on macOS). Unsigned installers are for testing only.
+- **Desktop installers:** built by [.github/workflows/release.yml](../.github/workflows/release.yml)
+  when the tag is pushed — Windows (NSIS), macOS (DMG, Apple Silicon) and Linux
+  (AppImage) — and attached to the GitHub release with `SHA256SUMS.txt`. The asset names
+  are fixed (`FUDISLTE-Setup.exe`, `FUDISLTE-arm64.dmg`, `FUDISLTE-x86_64.AppImage`)
+  because the website's download buttons link to `/releases/latest/download/<name>`.
+  The workflow signs when the repository secrets exist: `WIN_CSC_LINK` and
+  `WIN_CSC_KEY_PASSWORD` (Windows), `MAC_CSC_LINK` and `MAC_CSC_KEY_PASSWORD` (macOS,
+  Developer ID). Without them the installers are unsigned and Windows SmartScreen and
+  macOS Gatekeeper warn when they are opened. Locally:
+  `pnpm --filter @fudislte/desktop dist`.
 - **VS Code extension:** `npm run package` and `npm run check:vsix` in
   `extensions/vscode`; set the `repository` field first so `--allow-missing-repository`
   can be dropped.
@@ -42,7 +49,7 @@ while the version is 0.x, minor versions may break things and say so in the chan
 ## Publishing
 
 1. Tag the commit `v<version>` (signed tag) and push it.
-2. Create the release with the changelog section, the installers and the `.vsix`, and
-   their SHA-256 checksums.
+2. The release workflow creates the GitHub release from the tag with the changelog
+   section, the installers and their SHA-256 checksums. Attach the `.vsix` if it ships.
 3. Push the images to the registry, if the project publishes images.
 4. Announce breaking changes and required operator steps prominently.

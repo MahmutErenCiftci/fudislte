@@ -37,9 +37,9 @@ use a new one.
 ## Taking a backup
 
 ```bash
-scripts/ops/backup.sh -p fudislte -o /var/backups/fudislte                  # production stack
 scripts/ops/backup.sh -p fudislte -o /var/backups/fudislte --with-caddy \
-  -r age1qy…your-public-key…                                            # encrypted, with Caddy data
+  -r age1qy…your-public-key…                                    # production stack
+scripts/ops/backup.sh -p fudislte -o /mnt/encrypted/backups --unencrypted   # plaintext: only on an encrypted disk
 ```
 
 `-p` is the Compose project name (`docker compose ls`), `-d` the directory of the compose
@@ -106,8 +106,15 @@ age-keygen -o fudislte-backup.key          # on an offline machine; prints the p
 Give `backup.sh` only the **public** key (`-r age1…`, or `-R recipients.txt` for several
 administrators). Keep the private key offline (password manager, safe, a second
 administrator) — without it the backups cannot be restored, and it must not live on the
-server that holds the backups. With recipients, the script refuses to run when `age` is not
-installed rather than writing plaintext. The plaintext exists briefly in the output
+server that holds the backups. Without `-r` or `-R` the script refuses to run unless you
+pass `--unencrypted`, and with recipients it refuses to run when `age` is not installed
+rather than writing plaintext.
+
+Checksums and the manifest catch damaged backups, not forged ones: anyone who can write to
+the backup storage and knows the public key can produce a backup that verifies. Keep
+backups where the FUDISLTE server can add new ones but not change or delete old ones
+(append-only or object-lock storage, or a backup host that pulls from the server), and
+restore only backups you took yourself. The plaintext exists briefly in the output
 directory while the backup is made; put that directory on an encrypted disk, as
 [docker-compose.md](docker-compose.md#encryption-at-rest) recommends for the Docker data.
 

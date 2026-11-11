@@ -435,6 +435,7 @@ export const tr = {
   'registration.users': 'Kullanıcı sayısı (otomatik)',
   'registration.version': 'Sürüm (otomatik)',
   'registration.never': 'Mesajlar, dosyalar, kişi listesi, IP adresleri veya başka hiçbir bilgi gönderilmez.',
+  'registration.privacy': 'Gizlilik bildirimi',
   'registration.lastSent': 'Son gönderim: {date}',
   'registration.pending': 'İlk bildirim gönderiliyor…',
   'registration.failed': 'Son gönderim başarısız oldu, bir saat sonra yeniden denenecek: {error}',

@@ -185,13 +185,8 @@ func (s *Service) CreateAccessKey(w http.ResponseWriter, r *http.Request) error 
 		if !actor.CanAssign(*role) {
 			return httpx.NewError(http.StatusForbidden, "forbidden", "You can only invite people with a role that ranks below yours.")
 		}
-		exists, err := auth.UserExists(ctx, tx, email)
-		if err != nil {
-			return err
-		}
-		if exists {
-			return httpx.Invalid(map[string]string{"email": "This person already has an account. Invite them instead."})
-		}
+		// The domain check comes first: otherwise the answer would tell whether an address
+		// outside this workspace has an account on the server.
 		if !instanceAdmin {
 			var verified bool
 			if err := tx.QueryRow(ctx, `
@@ -202,6 +197,13 @@ func (s *Service) CreateAccessKey(w http.ResponseWriter, r *http.Request) error 
 			if !verified {
 				return httpx.Invalid(map[string]string{"email": "Use an address on one of this workspace's verified email domains. A server administrator can create keys for any address."})
 			}
+		}
+		exists, err := auth.UserExists(ctx, tx, email)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return httpx.Invalid(map[string]string{"email": "This person already has an account. Invite them instead."})
 		}
 		if _, err := tx.Exec(ctx, `
 			UPDATE access_keys SET revoked_at = now()
@@ -292,16 +294,26 @@ func (s *Service) RedeemAccessKey(w http.ResponseWriter, r *http.Request) error 
 		var (
 			keyID, orgID, roleID uuid.UUID
 			email, name, locale  string
+			allowed              bool
 		)
+		// A key made by someone who is not a server administrator is only good while its
+		// domain is still verified for the workspace.
 		err := tx.QueryRow(ctx, `
-			SELECT id, org_id, email, display_name, locale, role_id FROM access_keys
-			WHERE key_hash = $1 AND used_at IS NULL AND revoked_at IS NULL AND expires_at > now()
-			FOR UPDATE`, auth.HashToken(key)).Scan(&keyID, &orgID, &email, &name, &locale, &roleID)
+			SELECT k.id, k.org_id, k.email, k.display_name, k.locale, k.role_id,
+			       COALESCE(u.is_instance_admin, false) OR EXISTS (
+			         SELECT 1 FROM organization_domains d
+			         WHERE d.org_id = k.org_id AND d.domain = substring(k.email from '@([^@]*)$') AND d.verified_at IS NOT NULL)
+			FROM access_keys k LEFT JOIN users u ON u.id = k.created_by
+			WHERE k.key_hash = $1 AND k.used_at IS NULL AND k.revoked_at IS NULL AND k.expires_at > now()
+			FOR UPDATE OF k`, auth.HashToken(key)).Scan(&keyID, &orgID, &email, &name, &locale, &roleID, &allowed)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return errAccessKeyInvalid
 		}
 		if err != nil {
 			return err
+		}
+		if !allowed {
+			return errAccessKeyInvalid
 		}
 		exists, err := auth.UserExists(ctx, tx, email)
 		if err != nil {

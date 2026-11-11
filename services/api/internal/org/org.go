@@ -33,6 +33,11 @@ type Service struct {
 	publicURL       string
 	invitationsByIP *httpx.Limiter
 	accessKeysByIP  *httpx.Limiter
+	// invitationCodesByEmail caps code emails per invited address, like sign-in codes,
+	// so a forwarded link cannot be used to flood a mailbox or guess codes without end.
+	invitationCodesByEmail *httpx.Limiter
+	// invitationsByActor caps how many invitation emails one person can send.
+	invitationsByActor *httpx.Limiter
 	// verifyAttempts limits DNS lookups for domain verification per workspace.
 	verifyAttempts *httpx.Limiter
 	lookupTXT      LookupTXT
@@ -45,14 +50,16 @@ func NewService(db *pgxpool.Pool, authSvc *auth.Service, outbox *mail.Outbox, pu
 		lookup = net.DefaultResolver.LookupTXT
 	}
 	return &Service{
-		db:              db,
-		auth:            authSvc,
-		outbox:          outbox,
-		publicURL:       publicURL,
-		invitationsByIP: httpx.NewLimiter(3*time.Second, 20),
-		accessKeysByIP:  httpx.NewLimiter(3*time.Second, 20),
-		verifyAttempts:  httpx.NewLimiter(10*time.Second, 10),
-		lookupTXT:       lookup,
+		db:                     db,
+		auth:                   authSvc,
+		outbox:                 outbox,
+		publicURL:              publicURL,
+		invitationsByIP:        httpx.NewLimiter(3*time.Second, 20),
+		accessKeysByIP:         httpx.NewLimiter(3*time.Second, 20),
+		invitationCodesByEmail: httpx.NewLimiter(10*time.Minute, 3),
+		invitationsByActor:     httpx.NewLimiter(30*time.Second, 50),
+		verifyAttempts:         httpx.NewLimiter(10*time.Second, 10),
+		lookupTXT:              lookup,
 	}
 }
 
@@ -94,12 +101,26 @@ func (m *Membership) Outranks(position int) bool {
 }
 
 // CanAssign reports whether the member may give role r to someone. Only owners may
-// assign the Owner role; everyone else may only assign roles ranked below their own.
+// assign the Owner role; everyone else may only assign roles ranked below their own
+// that grant nothing they do not hold themselves. Without the second rule, someone who
+// may invite could give a second account of their own a lower-ranked custom role that
+// carries permissions they lack.
 func (m *Membership) CanAssign(r Role) bool {
 	if r.isOwner() {
 		return m.IsOwner()
 	}
-	return m.IsOwner() || r.Position < m.Role.Position
+	if m.IsOwner() {
+		return true
+	}
+	if r.Position >= m.Role.Position {
+		return false
+	}
+	for _, p := range r.Permissions {
+		if !m.Can(p) {
+			return false
+		}
+	}
+	return true
 }
 
 // NormalizeName validates an organization name, returning a user-facing message on failure.

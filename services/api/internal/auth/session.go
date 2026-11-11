@@ -11,6 +11,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -108,7 +109,7 @@ func (s *Service) CreateSession(ctx context.Context, q database.Querier, r *http
 	token, hash := NewToken()
 	ua := r.UserAgent()
 	if len(ua) > 512 {
-		ua = ua[:512]
+		ua = strings.ToValidUTF8(ua[:512], "")
 	}
 	tag, err := q.Exec(ctx, `
 		INSERT INTO sessions (id, user_id, token_hash, user_agent, ip_address, expires_at)

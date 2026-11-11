@@ -66,6 +66,9 @@ func (s *Service) ListInvitations(w http.ResponseWriter, r *http.Request) error 
 func (s *Service) CreateInvitation(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	actor := mustMembership(ctx)
+	if !s.invitationsByActor.Allow(actor.UserID.String()) {
+		return httpx.ErrRateLimited
+	}
 	var in struct {
 		Email  string    `json:"email"`
 		RoleID uuid.UUID `json:"roleId"`
@@ -243,6 +246,9 @@ func (s *Service) RequestInvitationCode(w http.ResponseWriter, r *http.Request) 
 	inv, err := s.findPendingInvitation(ctx, token)
 	if err != nil {
 		return err
+	}
+	if !s.invitationCodesByEmail.Allow(inv.email) {
+		return httpx.ErrRateLimited
 	}
 	exists, err := auth.UserExists(ctx, s.db, inv.email)
 	if err != nil {

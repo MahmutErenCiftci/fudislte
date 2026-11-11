@@ -3,16 +3,9 @@
 The stack is three containers: **Caddy** (TLS, the web app, reverse proxy), the **API**
 and **PostgreSQL**. Two optional parts join the same Compose project: **LiveKit** for
 voice and video (the `media` profile) and the **AI worker** (the `compose.ai.yml`
-overlay, a preview). Live events come from the API itself
+overlay). Live events come from the API itself
 ([ADR-0008](../decisions/0008-realtime-delivery.md)) and attachments live on the API's
 volume ([ADR-0009](../decisions/0009-file-storage.md)), so nothing else is needed.
-
-> Verification status (2026-11-03): the images were built from the repository and run on
-> Docker Engine in WSL2 (Ubuntu 24.04) with the local override: first-run setup, sign-in,
-> a whiteboard under the production Content Security Policy, the license pages, and a
-> backup restored into a fresh project (`scripts/ops/restore-drill.sh`). Not
-> yet run on a public server with a real domain, Let's Encrypt and SMTP — try a staging
-> server first.
 
 ## Deployment profiles
 
@@ -96,20 +89,18 @@ before every upgrade — the database first, so a file uploaded in between is on
 file on disk, never a missing one:
 
 ```bash
-docker compose exec -T postgres pg_dump -U fudislte -d fudislte --format=custom > fudislte-$(date +%F).dump
-docker cp "$(docker compose ps -q api):/var/lib/fudislte/files" - > fudislte-files-$(date +%F).tar
+umask 077   # backups hold every message and file: readable by root only
+docker compose exec -T postgres pg_dump -U fudislte -d fudislte --format=custom | age -r <recipient-public-key> -o fudislte-$(date +%F).dump.age
+docker cp "$(docker compose ps -q api):/var/lib/fudislte/files" - | age -r <recipient-public-key> -o fudislte-files-$(date +%F).tar.age
 ```
 
 `docker cp` works although the API image has no shell or `tar`. Messages and files
 removed by the workspace's retention setting stay in older backups until those are
 rotated; keep backups no longer than your retention policy allows.
 
-Encrypt backups before they leave the host, for example with `age`:
-
-```bash
-age -r <recipient-public-key> -o fudislte-$(date +%F).dump.age fudislte-$(date +%F).dump
-age -r <recipient-public-key> -o fudislte-files-$(date +%F).tar.age fudislte-files-$(date +%F).tar
-```
+The commands above pipe straight into `age`, so no plaintext copy is written. Create the
+key pair with `age-keygen` on an administrator's computer, not on this server, and keep
+the private key offline; `scripts/ops/backup.sh` does all of this with verification.
 
 ## Restore
 

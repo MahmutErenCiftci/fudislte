@@ -226,3 +226,46 @@ func TestLimiter(t *testing.T) {
 		t.Fatal("token not refilled")
 	}
 }
+
+// Servers that stopped reporting make room, and one network cannot register without end.
+func TestRegistryForgetsSilentServersAndLimitsNewOnes(t *testing.T) {
+	h := newHarness(t) // holds at most 3
+	ids := []string{
+		"00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002",
+		"00000000-0000-4000-8000-000000000003", "00000000-0000-4000-8000-000000000004",
+	}
+	for _, id := range ids[:3] {
+		if status, body := h.do(http.MethodPost, "/v1/instances", report(map[string]any{"instanceId": id}), nil); status != http.StatusNoContent {
+			t.Fatalf("register: %d %s", status, body)
+		}
+	}
+	// A month later, a new server takes the place of silent ones.
+	h.now = h.now.Add(31 * 24 * time.Hour)
+	if status, body := h.do(http.MethodPost, "/v1/instances", report(map[string]any{"instanceId": ids[3]}), nil); status != http.StatusNoContent {
+		t.Fatalf("after a month: %d %s", status, body)
+	}
+	if h.store.Has(ids[0]) || !h.store.Has(ids[3]) {
+		t.Fatal("silent instances were not forgotten")
+	}
+	if n := h.store.ForgetStale(h.now.Add(31 * 24 * time.Hour)); n != 1 {
+		t.Fatalf("ForgetStale removed %d, want 1", n)
+	}
+
+	l := newWideLimiter(time.Hour, 2)
+	now := time.Unix(0, 0)
+	// Different /64s of one /48 share a bucket; another /48 does not.
+	if !l.allow("2001:db8:1:1::1", now) || !l.allow("2001:db8:1:2::1", now) || l.allow("2001:db8:1:3::1", now) {
+		t.Fatal("a /48 was not limited as one network")
+	}
+	if !l.allow("2001:db8:2::1", now) || !l.allow("192.0.2.1", now) || !l.allow("192.0.2.200", now) || l.allow("192.0.2.9", now) {
+		t.Fatal("wide keys are wrong")
+	}
+}
+
+func TestCSVNeutralisesEveryTextColumn(t *testing.T) {
+	for in, want := range map[string]string{"=1+1": "'=1+1", "+cmd": "'+cmd", "-2": "'-2", "@x": "'@x", "ok": "ok", "": ""} {
+		if got := csvSafe(in); got != want {
+			t.Errorf("csvSafe(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
