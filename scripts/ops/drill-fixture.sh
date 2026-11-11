@@ -94,8 +94,8 @@ COMPOSE_PROFILES=
 FUDISLTE_DOMAIN=fixture.invalid
 POSTGRES_PASSWORD=$(random_secret)
 FUDISLTE_DRILL_POSTGRES_IMAGE=${FUDISLTE_FIXTURE_POSTGRES_IMAGE:-$(image_from_local postgres postgres:17-alpine)}
-FUDISLTE_DRILL_API_IMAGE=${FUDISLTE_FIXTURE_API_IMAGE:-$(image_from_local api fudislte/api:0.1.1)}
-FUDISLTE_DRILL_WEB_IMAGE=${FUDISLTE_FIXTURE_WEB_IMAGE:-$(image_from_local web fudislte/web:0.1.1)}
+FUDISLTE_DRILL_API_IMAGE=${FUDISLTE_FIXTURE_API_IMAGE:-$(image_from_local api fudislte/api:0.1.2)}
+FUDISLTE_DRILL_WEB_IMAGE=${FUDISLTE_FIXTURE_WEB_IMAGE:-$(image_from_local web fudislte/web:0.1.2)}
 FUDISLTE_DRILL_EDGE_SUBNET=$(free_subnet)
 EOF
     log "starting project $project"

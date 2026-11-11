@@ -4,6 +4,24 @@ Notable changes to FUDISLTE. The format follows [Keep a Changelog](https://keepa
 and versions follow [Semantic Versioning](https://semver.org/); while the version is 0.x,
 anything may change between minor versions.
 
+## [0.1.2] — 2026-11-11
+
+FUDISLTE is in beta: it works and is tested, but expect changes between versions, and
+read these notes before upgrading.
+
+### Added
+
+- **Desktop app: sign in with an access key on first launch.** The connect screen keeps
+  the server address and adds "I have an access key": with the single-use key IT handed
+  out, the app connects and opens the account directly, without an email code. A wrong
+  key is reported on the same screen.
+- The connect screen follows the system language (Turkish or English).
+
+### Changed
+
+- FUDISLTE is published as **Beta v0.1**: release titles, the website and the desktop
+  app show "Beta v0.1" (0.1.x versions); 0.2 will be Beta v0.2.
+
 ## [0.1.1] — 2026-11-11
 
 The first release with downloadable installers, for Windows, macOS (Apple Silicon) and

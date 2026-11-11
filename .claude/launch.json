@@ -27,6 +27,17 @@
       "port": 8091
     },
     {
+      "name": "api-8091",
+      "runtimeExecutable": "wsl",
+      "runtimeArgs": [
+        "-d", "Ubuntu-24.04", "--", "env",
+        "FUDISLTE_HTTP_ADDR=127.0.0.1:8091",
+        "FUDISLTE_PUBLIC_URL=http://localhost:5174",
+        "bash", "scripts/wsl/dev-api.sh"
+      ],
+      "port": 8091
+    },
+    {
       "name": "web-alt",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@fudislte/web", "exec", "vite", "--port", "5174", "--strictPort"],

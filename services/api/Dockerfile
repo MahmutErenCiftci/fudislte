@@ -6,7 +6,7 @@ WORKDIR /src
 COPY services/api/go.mod services/api/go.sum ./
 RUN go mod download
 COPY services/api/ .
-ARG VERSION=0.1.1
+ARG VERSION=0.1.2
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X main.version=${VERSION}" -o /out/fudislte-api ./cmd/fudislte-api \
  && mkdir -p /out/data
 # Licenses that travel with the binary: FUDISLTE's own, the Go standard library's and those

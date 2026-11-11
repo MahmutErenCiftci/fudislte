@@ -210,7 +210,7 @@ const EN = {
   'feat.eyebrow': 'Features',
   'feat.title': 'Everything a team needs',
   'feat.lead':
-    'Working, tested features shipped with version 0.1.1. The interface is in Turkish and English; each person picks their language in the settings.',
+    'Working, tested features shipped with Beta v0.1. The interface is in Turkish and English; each person picks their language in the settings.',
   'f.msg.t': 'Messaging',
   'f.msg.1': 'Public and private channels',
   'f.msg.2': 'Direct and group messages',
@@ -355,7 +355,7 @@ const EN = {
   'inst.note':
     'Detailed guides: <a data-repo="/blob/main/docs/deployment/docker-compose.md" href="#install">Installing with Docker Compose</a> · <a data-repo="/blob/main/docs/deployment/backup-restore.md" href="#install">Backups and restore</a>. On networks without internet access you can use Caddy\'s internal certificate authority.',
 
-  'dl.eyebrow': 'Download',
+  'dl.eyebrow': 'Download · Beta v0.1 (0.1.2)',
   'dl.title': 'Download the desktop app',
   'dl.lead':
     "Employees install the app, enter their organization's FUDISLTE address on first launch and sign in with a code sent to their work email. Anyone who prefers not to install it can open the same address in a browser.",
@@ -367,7 +367,7 @@ const EN = {
     'All versions, release notes and SHA-256 checksums are on the <a data-repo="/releases/latest" href="#download">GitHub Releases</a> page.',
 
   'road.eyebrow': 'Status',
-  'road.title': 'Version 0.1.1',
+  'road.title': 'Beta v0.1',
   'road.lead':
     'The first five phases of the roadmap are complete and closed with tests. While the version is 0.x, minor versions may change things; every change is written in the release notes.',
   'road.link': 'Full roadmap →',
@@ -577,7 +577,7 @@ function setupMenu() {
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') close()
   })
-  window.matchMedia('(min-width: 1141px)').addEventListener('change', (event) => {
+  window.matchMedia('(min-width: 1181px)').addEventListener('change', (event) => {
     if (event.matches) close()
   })
 }

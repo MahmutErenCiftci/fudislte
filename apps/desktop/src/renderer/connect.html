@@ -13,15 +13,21 @@
         <rect width="32" height="32" rx="8" />
         <path d="M11.5 22V10h9.5M11.5 16h7.5" />
       </svg>
-      <h1>Connect to your workspace</h1>
-      <p class="lead">Enter the address of your organization's FUDISLTE server.</p>
+      <h1 data-t="title">Connect to your workspace</h1>
+      <p class="lead" data-t="lead">Enter the address of your organization's FUDISLTE server.</p>
       <form novalidate>
-        <label for="server">Server address</label>
+        <label for="server" data-t="server">Server address</label>
         <input id="server" name="server" type="url" placeholder="fudislte.your-company.com" autocomplete="url" spellcheck="false" required autofocus />
+        <div id="key-row" class="key-row" hidden>
+          <label for="key" data-t="key">Access key</label>
+          <input id="key" name="key" type="text" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+          <p class="hint" data-t="keyHint">The single-use key your IT team gave you. It opens your account without an email code.</p>
+        </div>
         <p id="error" class="error" role="alert"></p>
-        <button type="submit">Connect</button>
+        <button type="submit" id="submit" data-t="connect">Connect</button>
+        <button type="button" id="toggle-key" class="link" aria-expanded="false" aria-controls="key-row" data-t="haveKey">I have an access key</button>
       </form>
-      <p class="note">Your organization runs this server. FUDISLTE Desktop only connects to the address you enter.</p>
+      <p class="note" data-t="note">Your organization runs this server. FUDISLTE Desktop only connects to the address you enter.</p>
     </main>
     <footer id="version"></footer>
   </body>

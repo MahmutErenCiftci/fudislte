@@ -228,6 +228,7 @@ function createWindow() {
   })
   if (isDev && process.env.FUDISLTE_SMOKE_TEST === '1') runSmokeTest(mainWindow)
   if (isDev && process.env.FUDISLTE_SMOKE_TEST === 'picker') runPickerSmokeTest(mainWindow)
+  if (isDev && process.env.FUDISLTE_SMOKE_TEST === 'key') runKeySmokeTest(mainWindow)
   void mainWindow.loadURL(serverOrigin ?? connectPage)
 }
 
@@ -269,19 +270,80 @@ async function probe(input: unknown): Promise<ProbeResult> {
   }
 }
 
+const MESSAGES_TR: Record<string, string> = {
+  'Enter your server address.': 'Sunucu adresini girin.',
+  'That does not look like a valid address.': 'Bu geçerli bir adrese benzemiyor.',
+  'Remove the user name and password from the address.': 'Adresten kullanıcı adını ve şifreyi kaldırın.',
+  'FUDISLTE requires an https:// address. Plain HTTP is only allowed for local development.':
+    'FUDISLTE bir https:// adresi gerektirir. Düz HTTP yalnızca yerel geliştirme içindir.',
+  'Use an https:// address.': 'Bir https:// adresi kullanın.',
+  'No FUDISLTE server answered at that address.': 'Bu adreste bir FUDISLTE sunucusu yanıt vermedi.',
+  'Could not reach that address. Check it and your network connection.':
+    'Bu adrese ulaşılamadı. Adresi ve ağ bağlantınızı kontrol edin.',
+  'The server did not accept the access key.': 'Sunucu erişim anahtarını kabul etmedi.',
+}
+
+/** The connect page's messages follow the system language, like the page itself. */
+function localize(message: string): string {
+  return app.getLocale().toLowerCase().startsWith('tr') ? (MESSAGES_TR[message] ?? message) : message
+}
+
+/**
+ * Signs in with an access key during the first connection. The key goes only to the
+ * server the person entered, from a hidden window on that server's own page: the request
+ * is same-origin there (so it passes the server's CSRF protection) and the session cookie
+ * lands in the app's session, so the main window opens signed in. The server's own
+ * error message (in the system language) is shown on the connect page.
+ */
+async function redeemAccessKey(origin: string, key: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const win = new BrowserWindow({
+    show: false,
+    webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false, webSecurity: true, spellcheck: false },
+  })
+  const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 20_000))
+  try {
+    await Promise.race([win.loadURL(origin), timeout])
+    const script = `(async () => {
+      const res = await fetch('/api/v1/auth/access-key', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ key: ${JSON.stringify(key)} }),
+      })
+      let body = null
+      try { body = await res.json() } catch {}
+      return { ok: res.ok, message: body && body.error && typeof body.error.message === 'string' ? body.error.message : null }
+    })()`
+    const answer = (await Promise.race([win.webContents.executeJavaScript(script, true), timeout])) as {
+      ok: boolean
+      message: string | null
+    }
+    if (answer.ok) return { ok: true }
+    return { ok: false, error: answer.message ?? localize('The server did not accept the access key.') }
+  } catch {
+    return { ok: false, error: localize('Could not reach that address. Check it and your network connection.') }
+  } finally {
+    win.destroy()
+  }
+}
+
 function registerIpc() {
   ipcMain.handle('fudislte:server:probe', (event, input: unknown) => {
     if (!fromConnectPage(event)) throw new Error('forbidden')
     return probe(input)
   })
-  ipcMain.handle('fudislte:server:connect', async (event, input: unknown) => {
+  ipcMain.handle('fudislte:server:connect', async (event, input: unknown, key: unknown) => {
     if (!fromConnectPage(event)) throw new Error('forbidden')
+    if (key !== null && key !== undefined && (typeof key !== 'string' || key.length > 64)) throw new Error('invalid')
     const result = await probe(input)
-    if (result.ok) {
-      serverOrigin = result.origin
-      saveConfig({ serverUrl: result.origin })
-      void mainWindow?.loadURL(result.origin)
+    if (!result.ok) return { ok: false, error: localize(result.error) }
+    if (typeof key === 'string' && key.trim() !== '') {
+      const signedIn = await redeemAccessKey(result.origin, key)
+      if (!signedIn.ok) return signedIn
     }
+    serverOrigin = result.origin
+    saveConfig({ serverUrl: result.origin })
+    void mainWindow?.loadURL(result.origin)
     return result
   })
   ipcMain.handle('fudislte:server:get', (event) => {
@@ -391,5 +453,69 @@ function runPickerSmokeTest(win: BrowserWindow) {
         await picker.webContents.executeJavaScript('document.querySelector(".source").click(); document.getElementById("share").click()')
       }, 1500)
     })
+  })
+}
+
+/**
+ * Development-only check used by `node scripts/run.mjs key`: starts signed out on the
+ * connect page and connects to FUDISLTE_SMOKE_SERVER. With FUDISLTE_SMOKE_KEY it first
+ * tries a wrong key, then signs in with the real one; without, it connects only. It
+ * prints where the app ended up and whether the server sees a signed-in user.
+ */
+function runKeySmokeTest(win: BrowserWindow) {
+  const server = process.env.FUDISLTE_SMOKE_SERVER ?? ''
+  const key = process.env.FUDISLTE_SMOKE_KEY ?? ''
+  const fill = (k: string) =>
+    win.webContents.executeJavaScript(`(async () => {
+      const row = document.querySelector('#key-row')
+      if (row.hidden === ${JSON.stringify(k !== '')}) document.querySelector('#toggle-key').click()
+      document.querySelector('#server').value = ${JSON.stringify(server)}
+      if (${JSON.stringify(k !== '')}) document.querySelector('#key').value = ${JSON.stringify(k)}
+      document.querySelector('form').requestSubmit()
+      for (let i = 0; i < 100; i++) {
+        await new Promise((r) => setTimeout(r, 200))
+        const error = document.querySelector('#error')
+        if (!error) return ''
+        if (error.textContent) return error.textContent
+      }
+      return 'timeout'
+    })()`)
+  const report = async () => {
+    const me = await win.webContents.executeJavaScript(
+      `fetch('/api/v1/me').then(async (r) => ({ status: r.status, body: await r.json().catch(() => null) }))`,
+    )
+    await new Promise((r) => setTimeout(r, 1500)) // let the web app route
+    const email = me?.body?.user?.email ?? null
+    console.log(`FUDISLTE_KEY_SMOKE ${JSON.stringify({ url: win.webContents.getURL(), status: me.status, email, saved: loadConfig().serverUrl })}`)
+    app.exit(key ? (me.status === 200 && email ? 0 : 1) : me.status === 401 ? 0 : 1)
+  }
+  const onConnectPage = async (): Promise<void> => {
+    if (!win.webContents.getURL().startsWith(connectPage)) {
+      win.webContents.once('did-finish-load', () => void onConnectPage())
+      return
+    }
+    if (process.env.FUDISLTE_SMOKE_SHOT) {
+      await win.webContents.executeJavaScript(`document.querySelector('#toggle-key').click()`)
+      await new Promise((r) => setTimeout(r, 300))
+      const { writeFile } = await import('node:fs/promises')
+      await writeFile(process.env.FUDISLTE_SMOKE_SHOT, (await win.webContents.capturePage()).toPNG())
+      await win.webContents.executeJavaScript(`document.querySelector('#toggle-key').click()`)
+    }
+    if (key) {
+      const wrong = await fill('ABCDE-12345-FGHJK-67890')
+      console.log(`FUDISLTE_KEY_SMOKE_WRONG ${JSON.stringify(wrong)}`)
+    }
+    win.webContents.once('did-finish-load', () => void report())
+    const error = await fill(key).catch(() => "") // the page is replaced on success
+    if (error) {
+      console.log(`FUDISLTE_KEY_SMOKE ${JSON.stringify({ error })}`)
+      app.exit(1)
+    }
+  }
+  void session.defaultSession.clearStorageData().then(() => {
+    saveConfig({})
+    serverOrigin = null
+    win.webContents.once('did-finish-load', () => void onConnectPage())
+    void win.loadURL(connectPage)
   })
 }

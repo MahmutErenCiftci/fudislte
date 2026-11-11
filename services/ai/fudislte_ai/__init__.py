@@ -3,4 +3,4 @@
 See docs/architecture/ai-worker.md for the HTTP contract and ADR-0012 for the decision.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"

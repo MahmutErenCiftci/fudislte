@@ -29,6 +29,11 @@ permissions:
 
 env:
   TAG: ${{ inputs.tag || github.ref_name }}
+  # The public name of the release line: tag v0.1.2 is titled "FUDISLTE Beta v0.1 (0.1.2)".
+  # Empty it when FUDISLTE leaves beta ("FUDISLTE 1.0.0"). The release is not marked as
+  # a pre-release on GitHub, because /releases/latest (the website's download links)
+  # skips pre-releases.
+  RELEASE_LABEL: Beta
   TAG_REF: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
 
 jobs:
@@ -127,7 +132,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          version="${TAG#v}"
+          if [ -n "$RELEASE_LABEL" ]; then
+            title="FUDISLTE $RELEASE_LABEL v${version%.*} ($version)"
+          else
+            title="FUDISLTE $version"
+          fi
           gh release create "$TAG" assets/* \
-            --title "FUDISLTE ${TAG#v}" \
+            --title "$title" \
             --notes-file notes.md \
             --verify-tag

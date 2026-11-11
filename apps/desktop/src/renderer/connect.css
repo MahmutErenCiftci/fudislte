@@ -129,3 +129,39 @@ footer {
   color: var(--muted);
   font-size: 11px;
 }
+
+.key-row {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.key-row[hidden] {
+  display: none;
+}
+
+#key {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+button.link {
+  height: auto;
+  margin-top: 4px;
+  padding: 4px;
+  background: transparent;
+  color: var(--primary);
+  font-size: 13px;
+  justify-self: center;
+}
+
+button.link:hover:not(:disabled) {
+  text-decoration: underline;
+}

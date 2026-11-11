@@ -363,6 +363,17 @@ code {
   text-decoration: none;
 }
 
+.beta-badge {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-soft-fg);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .main-nav {
   display: flex;
   gap: 2px;
@@ -2651,7 +2662,7 @@ code {
 
 /* Below this width the links no longer fit beside the brand and the actions on
    one line, so they move into the menu. Keep in sync with setupMenu in script.js. */
-@media (max-width: 1140px) {
+@media (max-width: 1180px) {
   .nav-toggle {
     display: inline-grid;
   }
@@ -2871,9 +2882,20 @@ code {
   }
 }
 
+/* Small tablets: the GitHub button keeps only its icon. */
+@media (max-width: 720px) {
+  .header-github span {
+    display: none;
+  }
+}
+
 /* Phones: the download button keeps its icon, the language buttons get tighter,
    so the menu button always fits. */
-@media (max-width: 540px) {
+@media (max-width: 600px) {
+  .beta-badge {
+    display: none;
+  }
+
   .header-download span {
     display: none;
   }

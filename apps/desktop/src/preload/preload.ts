@@ -18,7 +18,8 @@ if (location.protocol === 'fudislte:' && location.pathname === '/picker.html') {
   contextBridge.exposeInMainWorld('fudislteConnect', {
     version,
     probe: (url: string) => ipcRenderer.invoke('fudislte:server:probe', String(url)),
-    connect: (url: string) => ipcRenderer.invoke('fudislte:server:connect', String(url)),
+    connect: (url: string, key?: string | null) =>
+      ipcRenderer.invoke('fudislte:server:connect', String(url), typeof key === 'string' && key !== '' ? String(key) : null),
   })
 } else {
   const bridge: DesktopBridge = {
