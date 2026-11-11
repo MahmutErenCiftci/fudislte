@@ -40,3 +40,6 @@ mac:
 linux:
   target: AppImage
   category: Office
+  # Otherwise derived from the package name "@fudislte/desktop", which is not a valid
+  # file name; it is also the window class desktop environments match.
+  executableName: fudislte

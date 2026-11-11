@@ -24,7 +24,9 @@ jobs:
     name: Desktop (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      # Every platform runs to the end, so one run shows all failures; publishing
+      # still needs all three.
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
