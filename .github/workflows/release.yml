@@ -10,14 +10,26 @@
 #
 # Every action is pinned to a commit SHA: the signing secrets reach these jobs, so a
 # moved tag must not be able to swap in other code. Update the SHAs deliberately.
+#
+# To publish an existing tag whose run failed (after fixing this workflow), run it by
+# hand: gh workflow run release.yml -f tag=v0.1.1 — the code is built from the tag.
 name: Release
 
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to build and publish, e.g. v0.1.1
+        required: true
 
 permissions:
   contents: read
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+  TAG_REF: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
 
 jobs:
   desktop:
@@ -39,8 +51,12 @@ jobs:
             built: "release/*.AppImage"
             asset: FUDISLTE-x86_64.AppImage
     steps:
+      - name: Check the tag
+        shell: bash
+        run: '[[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "not a version tag: $TAG"; exit 1; }'
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          ref: ${{ env.TAG_REF }}
           persist-credentials: false
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -61,7 +77,11 @@ jobs:
           CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
         run: |
-          if [ -z "$WIN_CSC_LINK" ] && [ -z "$CSC_LINK" ]; then export CSC_IDENTITY_AUTO_DISCOVERY=false; fi
+          # Unset secrets arrive as empty strings, which electron-builder reads as a
+          # certificate path; drop them so unsigned builds work.
+          [ -n "$WIN_CSC_LINK" ] || unset WIN_CSC_LINK WIN_CSC_KEY_PASSWORD
+          [ -n "$CSC_LINK" ] || unset CSC_LINK CSC_KEY_PASSWORD
+          if [ -z "${WIN_CSC_LINK:-}" ] && [ -z "${CSC_LINK:-}" ]; then export CSC_IDENTITY_AUTO_DISCOVERY=false; fi
           pnpm --filter @fudislte/desktop dist --publish never
       - name: Give the installer its stable name
         shell: bash
@@ -86,6 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          ref: ${{ env.TAG_REF }}
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
@@ -96,17 +117,17 @@ jobs:
         run: sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
       - name: Release notes from CHANGELOG.md
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${TAG#v}"
           awk -v v="$version" '
             /^## \[/ { if (on) exit; if (index($0, "[" v "]")) { on = 1; next } }
             on { print }
           ' CHANGELOG.md > notes.md
-          test -s notes.md || echo "FUDISLTE $GITHUB_REF_NAME" > notes.md
+          test -s notes.md || echo "FUDISLTE $TAG" > notes.md
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" assets/* \
-            --title "FUDISLTE ${GITHUB_REF_NAME#v}" \
+          gh release create "$TAG" assets/* \
+            --title "FUDISLTE ${TAG#v}" \
             --notes-file notes.md \
             --verify-tag
