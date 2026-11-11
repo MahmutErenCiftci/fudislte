@@ -4,7 +4,7 @@ Notable changes to FUDISLTE. The format follows [Keep a Changelog](https://keepa
 and versions follow [Semantic Versioning](https://semver.org/); while the version is 0.x,
 anything may change between minor versions.
 
-## [0.1.0] — unreleased
+## [0.1.0] — 2026-11-11
 
 First public version, source-available under the PolyForm Internal Use License 1.0.0.
 

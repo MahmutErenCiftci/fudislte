@@ -338,13 +338,14 @@ code {
   background: var(--header-bg);
   backdrop-filter: saturate(1.6) blur(14px);
   -webkit-backdrop-filter: saturate(1.6) blur(14px);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-sm);
 }
 
 .header-inner {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
   height: 68px;
 }
 
@@ -364,26 +365,47 @@ code {
 
 .main-nav {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   margin: 0 auto;
 }
 
 .main-nav a {
-  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
   border-radius: 8px;
-  color: var(--fg-soft);
-  font-weight: 500;
-  font-size: 0.95rem;
+  color: var(--fg);
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.main-nav a .icon {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+
+.main-nav a:hover .icon,
+.main-nav a.active .icon {
+  color: var(--primary);
 }
 
 .main-nav a:hover {
-  color: var(--fg);
   background: var(--bg-alt);
   text-decoration: none;
 }
 
 .main-nav a.active {
-  color: var(--primary);
+  color: var(--primary-soft-fg);
+  background: var(--primary-soft);
+}
+
+.header-actions .btn .icon {
+  width: 16px;
+  height: 16px;
 }
 
 .header-actions {
@@ -2580,7 +2602,7 @@ code {
 
 /* ---------- Responsive ---------- */
 
-@media (max-width: 1240px) {
+@media (max-width: 1140px) {
   .mock-body {
     grid-template-columns: 140px minmax(0, 1fr);
   }
@@ -2591,10 +2613,6 @@ code {
 }
 
 @media (max-width: 1080px) {
-  .main-nav a {
-    padding: 8px 10px;
-  }
-
   .hero-grid {
     grid-template-columns: 1fr;
     gap: 48px;
@@ -2631,7 +2649,9 @@ code {
   }
 }
 
-@media (max-width: 960px) {
+/* Below this width the links no longer fit beside the brand and the actions on
+   one line, so they move into the menu. Keep in sync with setupMenu in script.js. */
+@media (max-width: 1140px) {
   .nav-toggle {
     display: inline-grid;
   }
@@ -2663,7 +2683,9 @@ code {
   .header-actions {
     margin-left: auto;
   }
+}
 
+@media (max-width: 960px) {
   .card-grid.three {
     grid-template-columns: 1fr;
   }
@@ -2846,6 +2868,22 @@ code {
 @media (max-width: 440px) {
   .header-github {
     display: none;
+  }
+}
+
+/* Phones: the download button keeps its icon, the language buttons get tighter,
+   so the menu button always fits. */
+@media (max-width: 540px) {
+  .header-download span {
+    display: none;
+  }
+
+  .header-download {
+    padding: 8px 10px;
+  }
+
+  .lang-switch button {
+    padding: 5px 7px;
   }
 }
 

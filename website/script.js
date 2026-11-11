@@ -39,8 +39,6 @@ const EN = {
   'nav.requirements': 'Requirements',
   'nav.download': 'Download',
   'nav.install': 'Install',
-  'nav.faq': 'FAQ',
-  'nav.claude': 'Install with Claude',
   'nav.tour': 'Step by step',
 
   'tour.eyebrow': 'Step by step',
@@ -579,7 +577,7 @@ function setupMenu() {
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') close()
   })
-  window.matchMedia('(min-width: 961px)').addEventListener('change', (event) => {
+  window.matchMedia('(min-width: 1141px)').addEventListener('change', (event) => {
     if (event.matches) close()
   })
 }
@@ -725,6 +723,36 @@ function setupCopyButtons() {
   })
 }
 
+// ---------- Download button ----------
+
+// The header's download button fetches the installer for the visitor's computer at once.
+// The names match the assets that .github/workflows/release.yml publishes. Phones,
+// tablets and unknown systems go to the download section instead.
+const INSTALLERS = {
+  windows: 'FUDISLTE-Setup.exe',
+  macos: 'FUDISLTE-arm64.dmg',
+  linux: 'FUDISLTE-x86_64.AppImage',
+}
+
+function visitorOS() {
+  const ua = navigator.userAgent
+  const platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || ''
+  if (/Android|iPhone|iPad|iPod/i.test(ua) || (/Mac/i.test(platform) && navigator.maxTouchPoints > 1)) return null
+  if (/Win/i.test(platform) || /Windows/i.test(ua)) return 'windows'
+  if (/Mac/i.test(platform) || /Macintosh/i.test(ua)) return 'macos'
+  if (/Linux/i.test(platform) || /Linux|X11/i.test(ua)) return 'linux'
+  return null
+}
+
+function setupDownloadButton() {
+  const os = visitorOS()
+  if (!os) return
+  document.querySelectorAll('.header-download').forEach((a) => {
+    a.href = REPO_URL + '/releases/latest/download/' + INSTALLERS[os]
+    a.dataset.os = os
+  })
+}
+
 // ---------- Start ----------
 
 function initialLanguage() {
@@ -743,6 +771,7 @@ setupScrollSpy()
 setupTabs()
 setupTour()
 setupCopyButtons()
+setupDownloadButton()
 applyLanguage(initialLanguage())
 
 document.querySelectorAll('[data-set-lang]').forEach((button) => {
