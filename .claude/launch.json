@@ -43,6 +43,18 @@
       "runtimeArgs": ["--filter", "@fudislte/web", "exec", "vite", "--port", "5174", "--strictPort"],
       "env": { "FUDISLTE_API_URL": "http://127.0.0.1:8091" },
       "port": 5174
+    },
+    {
+      "name": "web-demo",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@fudislte/web", "dev:demo"],
+      "port": 5175
+    },
+    {
+      "name": "web-demo-build",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@fudislte/web", "exec", "vite", "preview", "--mode", "demo"],
+      "port": 4175
     }
   ]
 }

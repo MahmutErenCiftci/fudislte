@@ -31,6 +31,7 @@
     <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 21 2M16 7l3 3M18.5 4.5l2 2"/></symbol>
     <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m4 17 6-5-6-5M12 19h8"/></symbol>
     <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l5.5-3.5z"/></symbol>
     <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
     <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
@@ -70,8 +71,7 @@
         <a href="#security"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg><span data-i18n="nav.security">Güvenlik</span></a>
         <a href="#requirements"><svg class="icon" aria-hidden="true"><use href="#i-chip"/></svg><span data-i18n="nav.requirements">Gereksinimler</span></a>
         <a href="#install"><svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg><span data-i18n="nav.install">Kurulum</span></a>
-        <a href="#tour"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><span data-i18n="nav.tour">Adım adım</span></a>
-      </nav>
+        <a href="#tour"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><span data-i18n="nav.tour">Adım adım</span></a>      </nav>
       <div class="header-actions">
         <div class="lang-switch" role="group" aria-label="Dil / Language">
           <button type="button" data-set-lang="tr" aria-pressed="true">TR</button>
@@ -111,7 +111,11 @@
           </h1>
           <p class="lead" data-i18n="hero.lead">FUDISLTE; mesajlaşmayı, sesli ve görüntülü odaları, toplantıları, projeleri ve beyaz tahtaları tek bir yerde toplayan, <strong>kendi sunucunuzda çalışan</strong>, kaynak kodu incelenebilir bir iş birliği platformudur. Discord, Slack ve Microsoft Teams'e alternatif: satıcı bulutu yok, kullanıcı başı ücret yok, verileriniz sizde kalır.</p>
           <div class="hero-actions">
-            <a class="btn btn-primary btn-lg" href="#install">
+            <a class="btn btn-primary btn-lg" data-demo href="#features" target="_blank" rel="noopener">
+              <svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>
+              <span data-i18n="hero.ctaDemo">Canlı demoyu dene</span>
+            </a>
+            <a class="btn btn-outline btn-lg" href="#install">
               <span data-i18n="hero.ctaInstall">Kurulumu başlat</span>
               <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
             </a>
@@ -1009,7 +1013,8 @@ tools/loadtest       <u data-i18n="tree.loadtest">Yük üreteci (Go)</u></code><
           <p data-i18n="cta.text">Kendi sunucunuzda, kurumunuz için ücretsiz, kullanıcı başı ücret olmadan.</p>
         </div>
         <div class="hero-actions">
-          <a class="btn btn-light btn-lg" href="#install"><span data-i18n="cta.install">Kurulum adımları</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="btn btn-light btn-lg" data-demo href="#features" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span data-i18n="cta.demo">Önce demoyu dene</span></a>
+          <a class="btn btn-ghost-light btn-lg" href="#install"><span data-i18n="cta.install">Kurulum adımları</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
           <a class="btn btn-ghost-light btn-lg" data-repo="" href="#install"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg><span data-i18n="cta.repo">GitHub'da görüntüle</span></a>
         </div>
       </div>

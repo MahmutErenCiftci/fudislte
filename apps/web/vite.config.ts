@@ -10,22 +10,62 @@ import { defineConfig, type Plugin } from 'vite'
 // behind the reverse proxy.
 const apiTarget = process.env.FUDISLTE_API_URL ?? 'http://127.0.0.1:8080'
 
-export default defineConfig({
-  plugins: [react(), tailwindcss(), excalidrawFonts()],
-  server: {
-    port: 5173,
-    strictPort: true,
-    proxy: {
-      '/api': { target: apiTarget, changeOrigin: false },
+export default defineConfig(({ mode }) =>
+  mode === 'demo'
+    ? {
+        // The browser-only demo (src/demo): no server, the app answers its own API calls.
+        plugins: [react(), tailwindcss(), excalidrawFonts(), demoEntry()],
+        server: { port: 5175, strictPort: true },
+        preview: { port: 4175 },
+        build: { outDir: 'dist-demo' },
+      }
+    : {
+        plugins: [react(), tailwindcss(), excalidrawFonts()],
+        server: {
+          port: 5173,
+          strictPort: true,
+          proxy: {
+            '/api': { target: apiTarget, changeOrigin: false },
+          },
+        },
+        preview: {
+          port: 4173,
+          proxy: {
+            '/api': { target: apiTarget, changeOrigin: false },
+          },
+        },
+      },
+)
+
+/**
+ * Starts the demo build from src/demo/entry.ts, which installs the fake backend first, and
+ * gives Cloudflare Pages the same security headers the server's Caddy sends
+ * (infrastructure/docker/Caddyfile), minus camera and microphone, which the demo never uses.
+ */
+function demoEntry(): Plugin {
+  const headers = `/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Cross-Origin-Opener-Policy: same-origin
+  Permissions-Policy: camera=(), microphone=(), display-capture=(), geolocation=(), payment=(), usb=()
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/excalidraw/*
+  Cache-Control: public, max-age=31536000, immutable
+`
+  return {
+    name: 'fudislte-demo-entry',
+    transformIndexHtml: { order: 'pre', handler: (html) => html.replace('/src/main.tsx', '/src/demo/entry.ts') },
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: '_headers', source: headers })
     },
-  },
-  preview: {
-    port: 4173,
-    proxy: {
-      '/api': { target: apiTarget, changeOrigin: false },
-    },
-  },
-})
+  }
+}
 
 /**
  * Excalidraw's fonts, served by FUDISLTE itself instead of a public CDN: the dev server

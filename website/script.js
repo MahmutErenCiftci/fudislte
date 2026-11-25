@@ -8,6 +8,10 @@
 // The public repository. Every GitHub link on the page and the clone command use it.
 const REPO_URL = 'https://github.com/MahmutErenCiftci/fudislte'
 
+// The browser-only demo (apps/web, `build:demo`), published as its own Cloudflare Pages
+// project. Every "live demo" button on the page opens it.
+const DEMO_URL = 'https://fudislte-demo.pages.dev'
+
 const UI = {
   tr: {
     copy: 'Kopyala',
@@ -40,7 +44,6 @@ const EN = {
   'nav.download': 'Download',
   'nav.install': 'Install',
   'nav.tour': 'Step by step',
-
   'tour.eyebrow': 'Step by step',
   'tour.title': "A company's first hour",
   'tour.lead':
@@ -136,6 +139,7 @@ const EN = {
   'hero.title2': 'that belongs to you.',
   'hero.lead':
     "FUDISLTE is a source-available <strong>collaboration platform that runs on your own server</strong>, bringing messaging, voice and video rooms, meetings, projects and whiteboards together in one place. An alternative to Discord, Slack and Microsoft Teams: no vendor cloud, no per-seat fee, your data stays with you.",
+  'hero.ctaDemo': 'Try the live demo',
   'hero.ctaInstall': 'Start installing',
   'hero.ctaRepo': 'Browse the source',
   'hero.check1': 'Free for your organization · source available',
@@ -437,6 +441,7 @@ const EN = {
 
   'cta.title': "Set up your team's space today",
   'cta.text': 'On your own server, free for your organization, with no per-seat fees.',
+  'cta.demo': 'Try the demo first',
   'cta.install': 'Installation steps',
   'cta.repo': 'View on GitHub',
 
@@ -520,6 +525,16 @@ function applyLanguage(next) {
   })
   updateThemeLabel()
   fillRepositoryLinks() // translated HTML may contain repository links
+  fillDemoLinks()
+}
+
+// ---------- Demo links ----------
+
+// The demo opens in the language the visitor reads the site in.
+function fillDemoLinks() {
+  document.querySelectorAll('a[data-demo]').forEach((a) => {
+    a.href = `${DEMO_URL}/?lang=${lang}`
+  })
 }
 
 // ---------- Repository links ----------

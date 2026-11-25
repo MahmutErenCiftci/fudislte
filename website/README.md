@@ -15,7 +15,8 @@ no build step, no dependencies, no requests to other origins.
 ## Before publishing
 
 Set `REPO_URL` at the top of `script.js` to the public repository. Every GitHub link on the
-page and the `git clone` command use it.
+page and the `git clone` command use it. `DEMO_URL` next to it is the address of the live
+demo, which every "live demo" button opens ([docs/deployment/demo.md](../docs/deployment/demo.md)).
 
 ## Editing text
 

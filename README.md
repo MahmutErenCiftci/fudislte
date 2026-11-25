@@ -140,7 +140,7 @@ website/            Public landing page (static HTML/CSS/JS for Cloudflare Pages
   [phase-1.md](docs/architecture/phase-1.md)
 - Decisions (ADRs): [docs/decisions](docs/decisions)
 - Security: [threat model](docs/security/threat-model.md) and [SECURITY.md](SECURITY.md)
-- Deployment: [Docker Compose](docs/deployment/docker-compose.md),
+- Deployment: [Docker Compose](docs/deployment/docker-compose.md), [live demo](docs/deployment/demo.md),
   [backups and restore](docs/deployment/backup-restore.md)
 - Design and interface: [docs/design](docs/design/README.md)
 - Dependencies and their licenses: [docs/dependencies.md](docs/dependencies.md)
